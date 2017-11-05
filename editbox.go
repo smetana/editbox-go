@@ -29,8 +29,10 @@ func (ed *Editor) InsertRune(r rune) {
 }
 
 func (ed *Editor) DeleteRuneBeforeCursor() {
-    ed.text = ed.text[:len(ed.text)-1]
-    ed.cursor -= 1
+    if ed.cursor > 0 {
+        ed.text = ed.text[:len(ed.text)-1]
+        ed.cursor -= 1
+    }
 }
 
 func (ed *Editor) Draw() {
