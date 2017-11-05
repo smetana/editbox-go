@@ -4,10 +4,7 @@ import (
 	"github.com/nsf/termbox-go"
 )
 
-type Editor struct {
-    text []rune
-    cursor int
-}
+const EditorPageSize = 1024
 
 func check(e error) {
 	if e != nil {
@@ -15,14 +12,30 @@ func check(e error) {
 	}
 }
 
+type Editor struct {
+    text []rune
+    cursor int
+}
+
 func NewEditor() *Editor {
     var ed Editor
-    ed.text = make([]rune, 0, 1024)
+    ed.text = make([]rune, 0, EditorPageSize)
     ed.cursor = 0
     return &ed
 }
 
+// Increase editor's memory footprint if editor's text
+// does not fit into undelying array
+func (ed *Editor) addPage() {
+    newSlice := make([]rune, len(ed.text), cap(ed.text) + EditorPageSize)
+    copy(newSlice, ed.text)
+    ed.text = newSlice
+}
+
 func (ed *Editor) InsertRune(r rune) {
+    if len(ed.text) == cap(ed.text) {
+        ed.addPage()
+    }
     ed.text = ed.text[:len(ed.text)+1]
     ed.text[ed.cursor] = r
     ed.cursor += 1
