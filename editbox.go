@@ -57,6 +57,7 @@ func main() {
 	defer termbox.Close()
 	termbox.SetInputMode(termbox.InputEsc)
     ed := NewEditor()
+    ed.Draw()
 
 loop:
 	for {
@@ -67,17 +68,13 @@ loop:
 				break loop
 			case termbox.KeyBackspace, termbox.KeyBackspace2:
                  ed.DeleteRuneBeforeCursor()
-                 ed.Draw()
 			case termbox.KeyEnter:
                  ed.InsertRune('\n')
-                 ed.Draw()
 			case termbox.KeySpace:
                  ed.InsertRune(' ')
-                 ed.Draw()
 			default:
 				if ev.Ch != 0 {
                     ed.InsertRune(ev.Ch)
-                    ed.Draw()
                 }
 			}
 		case termbox.EventError:
@@ -85,5 +82,6 @@ loop:
         default:
             // TODO Eats CPU. Use time.Sleep ?
         }
+        ed.Draw()
     }
 }
