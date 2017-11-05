@@ -28,8 +28,9 @@ func (ed *Editor) InsertRune(r rune) {
     ed.cursor += 1
 }
 
-func (ed *Editor) Text() string {
-    return string(ed.text)
+func (ed *Editor) DeleteRuneBeforeCursor() {
+    ed.text = ed.text[:len(ed.text)-1]
+    ed.cursor -= 1
 }
 
 func (ed *Editor) Draw() {
@@ -64,6 +65,9 @@ loop:
 			switch ev.Key {
 			case termbox.KeyEsc:
 				break loop
+			case termbox.KeyBackspace, termbox.KeyBackspace2:
+                 ed.DeleteRuneBeforeCursor()
+                 ed.Draw()
 			case termbox.KeyEnter:
                  ed.InsertRune('\n')
                  ed.Draw()
