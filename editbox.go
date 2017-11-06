@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/nsf/termbox-go"
+    "fmt"
 )
 
 func check(e error) {
@@ -53,6 +54,38 @@ func (ed *Editor) addLine() {
     }
 }
 
+func (ed *Editor) moveCursorRight() {
+    if len(ed.text) == 0 {
+        return
+    }
+    cursor := &ed.cursor
+    line := ed.text[cursor.y]
+    cursor.x += 1
+    if cursor.x == len(line) {
+        if cursor.y < len(ed.text) - 1 {
+            cursor.y += 1
+            cursor.x = 0
+        } else {
+            cursor.x = len(ed.text)
+        }
+    }
+}
+
+func (ed *Editor) moveCursorLeft() {
+    cursor := &ed.cursor
+    cursor.x -= 1
+    if cursor.x < 0 {
+        if cursor.y > 0 {
+            cursor.y += 1
+            line := ed.text[cursor.y]
+            cursor.x = len(line)
+        } else {
+            cursor.x = 0
+        }
+    }
+}
+
+
 func (ed *Editor) Draw() {
     coldef := termbox.ColorDefault
     termbox.Clear(coldef, coldef);
@@ -84,10 +117,10 @@ loop:
 				break loop
 			//case termbox.KeyBackspace, termbox.KeyBackspace2:
             //     ed.DeleteRuneBeforeCursor()
-			//case termbox.KeyArrowLeft:
-            //     ed.MoveCursor(-1)
-			//case termbox.KeyArrowRight:
-            //    ed.MoveCursor(1)
+			case termbox.KeyArrowLeft:
+                 ed.moveCursorLeft()
+			case termbox.KeyArrowRight:
+                 ed.moveCursorRight()
 			case termbox.KeyEnter:
                  ed.addLine()
 			case termbox.KeySpace:
@@ -102,6 +135,7 @@ loop:
         default:
             // TODO Eats CPU. Use time.Sleep ?
         }
+        fmt.Println(ed)
         ed.Draw()
     }
 }
