@@ -45,14 +45,19 @@ func (ed *Editor) insertRune(r rune) {
     cursor.x += 1
 }
 
-func (ed *Editor) addLine() {
+func (ed *Editor) insertLine() {
     cursor := &ed.cursor
-    cursor.y += 1
-    cursor.x = 0
-    if cursor.y == len(ed.text) {
+    if cursor.y == len(ed.text) - 1 {
         line := make([]rune, 0)
         ed.text = append(ed.text, line)
+    } else {
+        line := make([]rune, 0)
+        ed.text = append(ed.text, line)
+        copy(ed.text[cursor.y+1:], ed.text[cursor.y:])
+        ed.text[cursor.y] = line
     }
+    cursor.y += 1
+    cursor.x = 0
 }
 
 func (ed *Editor) moveCursorRight() {
@@ -123,7 +128,7 @@ loop:
 			case termbox.KeyArrowRight:
                  ed.moveCursorRight()
 			case termbox.KeyEnter:
-                 ed.addLine()
+                 ed.insertLine()
 			case termbox.KeySpace:
                  ed.insertRune(' ')
 			default:
