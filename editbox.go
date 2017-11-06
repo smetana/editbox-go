@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/nsf/termbox-go"
-    "fmt"
 )
 
 func check(e error) {
@@ -29,15 +28,17 @@ func NewEditor() *Editor {
     return &ed
 }
 
-func (ed *Editor) addRune(r rune) {
+func (ed *Editor) insertRune(r rune) {
     cursor := &ed.cursor
-    if cursor.y > len(ed.text) - 1 {
+    if cursor.y == len(ed.text) {
         ed.text = append(ed.text, make([]rune, 0))
     }
     line := ed.text[cursor.y]
-    if cursor.x > len(line) - 1 {
+    if cursor.x == len(line) {
         line = append(line, r)
     } else {
+        line = append(line, ' ')
+        copy(line[cursor.x+1:], line[cursor.x:])
         line[cursor.x] = r
     }
     ed.text[cursor.y] = line
@@ -48,7 +49,7 @@ func (ed *Editor) addLine() {
     cursor := &ed.cursor
     cursor.y += 1
     cursor.x = 0
-    if cursor.y > len(ed.text) - 1 {
+    if cursor.y == len(ed.text) {
         line := make([]rune, 0)
         ed.text = append(ed.text, line)
     }
@@ -66,7 +67,7 @@ func (ed *Editor) moveCursorRight() {
             cursor.y += 1
             cursor.x = 0
         } else {
-            cursor.x = len(ed.text)
+            cursor.x = len(line)
         }
     }
 }
@@ -76,7 +77,7 @@ func (ed *Editor) moveCursorLeft() {
     cursor.x -= 1
     if cursor.x < 0 {
         if cursor.y > 0 {
-            cursor.y += 1
+            cursor.y -= 1
             line := ed.text[cursor.y]
             cursor.x = len(line)
         } else {
@@ -124,10 +125,10 @@ loop:
 			case termbox.KeyEnter:
                  ed.addLine()
 			case termbox.KeySpace:
-                 ed.addRune(' ')
+                 ed.insertRune(' ')
 			default:
 				if ev.Ch != 0 {
-                    ed.addRune(ev.Ch)
+                    ed.insertRune(ev.Ch)
                 }
 			}
 		case termbox.EventError:
@@ -135,7 +136,6 @@ loop:
         default:
             // TODO Eats CPU. Use time.Sleep ?
         }
-        fmt.Println(ed)
         ed.Draw()
     }
 }
