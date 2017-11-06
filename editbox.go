@@ -4,70 +4,71 @@ import (
 	"github.com/nsf/termbox-go"
 )
 
-const EditorPageSize = 1024
-
 func check(e error) {
 	if e != nil {
 		panic(e)
 	}
 }
 
+type Cursor struct {
+    x int
+    y int
+}
+
 type Editor struct {
-    text []rune
-    cursor int
+    text [][]rune
+    cursor Cursor
 }
 
 func NewEditor() *Editor {
     var ed Editor
-    ed.text = make([]rune, 0, EditorPageSize)
-    ed.cursor = 0
+    ed.text = make([][]rune, 0)
+    ed.cursor.x = 0
+    ed.cursor.y = 0
     return &ed
 }
 
-// Increase editor's memory footprint if editor's text
-// does not fit into undelying array
-func (ed *Editor) addPage() {
-    newSlice := make([]rune, len(ed.text), cap(ed.text) + EditorPageSize)
-    copy(newSlice, ed.text)
-    ed.text = newSlice
-}
-
-func (ed *Editor) InsertRune(r rune) {
-    if len(ed.text) == cap(ed.text) {
-        ed.addPage()
+func (ed *Editor) addRune(r rune) {
+    cursor := &ed.cursor
+    if cursor.y > len(ed.text) - 1 {
+        ed.text = append(ed.text, make([]rune, 0))
     }
-    ed.text = ed.text[:len(ed.text)+1]
-    ed.text[ed.cursor] = r
-    ed.cursor += 1
+    line := ed.text[cursor.y]
+    if cursor.x > len(line) - 1 {
+        line = append(line, r)
+    } else {
+        line[cursor.x] = r
+    }
+    ed.text[cursor.y] = line
+    cursor.x += 1
 }
 
-func (ed *Editor) DeleteRuneBeforeCursor() {
-    if ed.cursor > 0 {
-        ed.text = ed.text[:len(ed.text)-1]
-        ed.cursor -= 1
+func (ed *Editor) addLine() {
+    cursor := &ed.cursor
+    cursor.y += 1
+    cursor.x = 0
+    if cursor.y > len(ed.text) - 1 {
+        line := make([]rune, 0)
+        ed.text = append(ed.text, line)
     }
 }
 
 func (ed *Editor) Draw() {
     coldef := termbox.ColorDefault
     termbox.Clear(coldef, coldef);
-    x,y := 0,0
-    for _, r := range ed.text {
-        if r == '\n' {
-            x = 0
-            y += 1
-        }
-        termbox.SetCell(x, y, r, coldef, coldef)
-        if r != '\n' {
-            x += 1
+    cursor := ed.cursor
+
+    for y, line := range ed.text {
+        for x, r := range line {
+            termbox.SetCell(x, y, r, coldef, coldef)
         }
     }
-    termbox.SetCursor(x, y)
+    termbox.SetCursor(cursor.x, cursor.y)
     termbox.Flush()
 }
 
 func main() {
-	err := termbox.Init()
+    err := termbox.Init()
     check(err)
 	defer termbox.Close()
 	termbox.SetInputMode(termbox.InputEsc)
@@ -81,15 +82,19 @@ loop:
 			switch ev.Key {
 			case termbox.KeyEsc:
 				break loop
-			case termbox.KeyBackspace, termbox.KeyBackspace2:
-                 ed.DeleteRuneBeforeCursor()
+			//case termbox.KeyBackspace, termbox.KeyBackspace2:
+            //     ed.DeleteRuneBeforeCursor()
+			//case termbox.KeyArrowLeft:
+            //     ed.MoveCursor(-1)
+			//case termbox.KeyArrowRight:
+            //    ed.MoveCursor(1)
 			case termbox.KeyEnter:
-                 ed.InsertRune('\n')
+                 ed.addLine()
 			case termbox.KeySpace:
-                 ed.InsertRune(' ')
+                 ed.addRune(' ')
 			default:
 				if ev.Ch != 0 {
-                    ed.InsertRune(ev.Ch)
+                    ed.addRune(ev.Ch)
                 }
 			}
 		case termbox.EventError:
