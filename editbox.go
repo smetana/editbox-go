@@ -20,6 +20,7 @@ type Editor struct {
     width, height int
     text [][]rune
     cursor Cursor
+    lastx int
 }
 
 func NewEditor(width, height int) *Editor {
@@ -60,6 +61,7 @@ func (ed *Editor) insertRune(r rune) {
             cursor.x -= 1
         }
     }
+    ed.lastx = cursor.x
 }
 
 func (ed *Editor) insertLine() {
@@ -78,8 +80,8 @@ func (ed *Editor) insertLine() {
         ed.text[cursor.y+1] = newLine
     }
     currentLine := ed.text[cursor.y]
-    if cursor.x <= len(currentLine) {
-        left := make([]rune, cursor.x + 1)
+    if cursor.x < len(currentLine) {
+        left := make([]rune, cursor.x)
         copy(left, currentLine[:cursor.x])
         right := make([]rune, len(currentLine) - cursor.x)
         copy(right, currentLine[cursor.x:])
@@ -88,6 +90,7 @@ func (ed *Editor) insertLine() {
     }
     cursor.y += 1
     cursor.x = 0
+    ed.lastx = cursor.x
 }
 
 func (ed *Editor) moveCursorRight() {
@@ -105,6 +108,7 @@ func (ed *Editor) moveCursorRight() {
             cursor.x = len(line)
         }
     }
+    ed.lastx = cursor.x
 }
 
 func (ed *Editor) moveCursorLeft() {
@@ -119,22 +123,35 @@ func (ed *Editor) moveCursorLeft() {
             cursor.x = 0
         }
     }
+    ed.lastx = cursor.x
 }
 
 func (ed *Editor) moveCursorUp() {
     cursor := &ed.cursor
-    line := ed.text[cursor.y]
-    atLineEnd := (cursor.x == len(line))
-    fmt.Println(atLineEnd, cursor.x, len(line), line)
     if cursor.y == 0 {
         return
     }
     cursor.y -= 1
-    line = ed.text[cursor.y]
-    if atLineEnd {
-        cursor.x = len(line) - 1
-    } else if cursor.x >= len(line) - 1 {
-        cursor.x = len(line) - 1
+    line := ed.text[cursor.y]
+    if ed.lastx > len(line) {
+        cursor.x = len(line)
+    } else {
+        cursor.x = ed.lastx
+    }
+}
+
+// TODO Code duplucation
+func (ed *Editor) moveCursorDown() {
+    cursor := &ed.cursor
+    if cursor.y == len(ed.text) - 1 {
+        return
+    }
+    cursor.y += 1
+    line := ed.text[cursor.y]
+    if ed.lastx > len(line) {
+        cursor.x = len(line)
+    } else {
+        cursor.x = ed.lastx
     }
 }
 
@@ -191,6 +208,8 @@ loop:
                  ed.moveCursorRight()
 			case termbox.KeyArrowUp:
                  ed.moveCursorUp()
+			case termbox.KeyArrowDown:
+                 ed.moveCursorDown()
 			case termbox.KeyEnter:
                  ed.insertLine()
 			case termbox.KeySpace:
