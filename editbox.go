@@ -22,7 +22,8 @@ type Editor struct {
 
 func NewEditor() *Editor {
     var ed Editor
-    ed.text = make([][]rune, 0)
+    ed.text = make([][]rune, 1)
+    ed.text[0] = make([]rune, 0)
     ed.cursor.x = 0
     ed.cursor.y = 0
     return &ed
@@ -30,9 +31,6 @@ func NewEditor() *Editor {
 
 func (ed *Editor) insertRune(r rune) {
     cursor := &ed.cursor
-    if cursor.y == len(ed.text) {
-        ed.text = append(ed.text, make([]rune, 0))
-    }
     line := ed.text[cursor.y]
     if cursor.x == len(line) {
         line = append(line, r)
@@ -51,10 +49,19 @@ func (ed *Editor) insertLine() {
         line := make([]rune, 0)
         ed.text = append(ed.text, line)
     } else {
-        line := make([]rune, 0)
-        ed.text = append(ed.text, line)
-        copy(ed.text[cursor.y+1:], ed.text[cursor.y:])
-        ed.text[cursor.y] = line
+        newLine := make([]rune, 0)
+        ed.text = append(ed.text, newLine)
+        copy(ed.text[cursor.y+2:], ed.text[cursor.y+1:])
+        ed.text[cursor.y+1] = newLine
+    }
+    currentLine := ed.text[cursor.y]
+    if cursor.x <= len(currentLine) {
+        left := make([]rune, cursor.x + 1)
+        copy(left, currentLine[:cursor.x])
+        right := make([]rune, len(currentLine) - cursor.x)
+        copy(right, currentLine[cursor.x:])
+        ed.text[cursor.y] = left
+        ed.text[cursor.y+1] = right
     }
     cursor.y += 1
     cursor.x = 0
@@ -67,7 +74,7 @@ func (ed *Editor) moveCursorRight() {
     cursor := &ed.cursor
     line := ed.text[cursor.y]
     cursor.x += 1
-    if cursor.x == len(line) {
+    if cursor.x >= len(line) {
         if cursor.y < len(ed.text) - 1 {
             cursor.y += 1
             cursor.x = 0
@@ -84,7 +91,7 @@ func (ed *Editor) moveCursorLeft() {
         if cursor.y > 0 {
             cursor.y -= 1
             line := ed.text[cursor.y]
-            cursor.x = len(line)
+            cursor.x = len(line) - 1
         } else {
             cursor.x = 0
         }
