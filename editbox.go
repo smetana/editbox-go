@@ -2,10 +2,8 @@ package main
 
 import (
 	"github.com/nsf/termbox-go"
+    "fmt"
 )
-
-const maxLineLen = 5
-const maxLines = 5
 
 func check(e error) {
 	if e != nil {
@@ -19,12 +17,15 @@ type Cursor struct {
 }
 
 type Editor struct {
+    width, height int
     text [][]rune
     cursor Cursor
 }
 
-func NewEditor() *Editor {
+func NewEditor(width, height int) *Editor {
     var ed Editor
+    ed.width = width
+    ed.height = height
     ed.text = make([][]rune, 1)
     ed.text[0] = make([]rune, 0)
     ed.cursor.x = 0
@@ -35,22 +36,24 @@ func NewEditor() *Editor {
 func (ed *Editor) insertRune(r rune) {
     cursor := &ed.cursor
     line := ed.text[cursor.y]
-    // TODO Better solution
-    if cursor.x == maxLineLen - 1 &&
-            cursor.y== maxLines - 1 {
-        return
-    }
-    if cursor.x == len(line) {
+    switch {
+    // Cursor is at the end of the box
+    // and last symbol already exists
+    case cursor.x == ed.width - 1 &&
+            cursor.y == ed.height - 1 &&
+            len(line) == ed.width:
+        line[cursor.x] = r
+    case cursor.x == len(line) - 1:
         line = append(line, r)
-    } else {
+    default:
         line = append(line, ' ')
         copy(line[cursor.x+1:], line[cursor.x:])
         line[cursor.x] = r
     }
     ed.text[cursor.y] = line
     cursor.x += 1
-    if cursor.x == maxLineLen {
-        if len(ed.text) < maxLines {
+    if cursor.x == ed.width {
+        if len(ed.text) < ed.height {
             ed.insertLine()
         } else {
             // TODO Better solution
@@ -61,7 +64,7 @@ func (ed *Editor) insertRune(r rune) {
 
 func (ed *Editor) insertLine() {
     cursor := &ed.cursor
-    if len(ed.text) == maxLines {
+    if len(ed.text) == ed.height {
         // TODO Handle this
         return
     }
@@ -118,6 +121,22 @@ func (ed *Editor) moveCursorLeft() {
     }
 }
 
+func (ed *Editor) moveCursorUp() {
+    cursor := &ed.cursor
+    line := ed.text[cursor.y]
+    atLineEnd := (cursor.x == len(line))
+    fmt.Println(atLineEnd, cursor.x, len(line), line)
+    if cursor.y == 0 {
+        return
+    }
+    cursor.y -= 1
+    line = ed.text[cursor.y]
+    if atLineEnd {
+        cursor.x = len(line) - 1
+    } else if cursor.x >= len(line) - 1 {
+        cursor.x = len(line) - 1
+    }
+}
 
 func (ed *Editor) Draw() {
     coldef := termbox.ColorDefault
@@ -138,7 +157,7 @@ func main() {
     check(err)
 	defer termbox.Close()
 	termbox.SetInputMode(termbox.InputEsc)
-    ed := NewEditor()
+    ed := NewEditor(40, 20)
     ed.Draw()
 
 loop:
@@ -154,6 +173,8 @@ loop:
                  ed.moveCursorLeft()
 			case termbox.KeyArrowRight:
                  ed.moveCursorRight()
+			case termbox.KeyArrowUp:
+                 ed.moveCursorUp()
 			case termbox.KeyEnter:
                  ed.insertLine()
 			case termbox.KeySpace:
