@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/nsf/termbox-go"
-    "fmt"
+//    "fmt"
 )
 
 func check(e error) {
@@ -152,12 +152,28 @@ func (ed *Editor) Draw() {
     termbox.Flush()
 }
 
+/*
+func formatEditor(ed *Editor) {
+    for i:=0; i<=len(ed.text); i++ {
+        fmt.Println("")
+    }
+    for i:=0; i<=10; i++ {
+        fmt.Printf("%50s\n", " ")
+    }
+    fmt.Printf("%v %40s\n", ed.cursor, " ")
+    for i, line := range ed.text {
+        fmt.Printf("%v: %v\n", i, line)
+    }
+}
+*/
+
 func main() {
     err := termbox.Init()
     check(err)
 	defer termbox.Close()
 	termbox.SetInputMode(termbox.InputEsc)
     ed := NewEditor(40, 20)
+    //formatEditor(ed)
     ed.Draw()
 
 loop:
@@ -189,6 +205,7 @@ loop:
         default:
             // TODO Eats CPU. Use time.Sleep ?
         }
+        //formatEditor(ed)
         ed.Draw()
     }
 }
