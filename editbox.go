@@ -4,6 +4,9 @@ import (
 	"github.com/nsf/termbox-go"
 )
 
+const maxLineLen = 5
+const maxLines = 5
+
 func check(e error) {
 	if e != nil {
 		panic(e)
@@ -32,6 +35,11 @@ func NewEditor() *Editor {
 func (ed *Editor) insertRune(r rune) {
     cursor := &ed.cursor
     line := ed.text[cursor.y]
+    // TODO Better solution
+    if cursor.x == maxLineLen - 1 &&
+            cursor.y== maxLines - 1 {
+        return
+    }
     if cursor.x == len(line) {
         line = append(line, r)
     } else {
@@ -41,10 +49,22 @@ func (ed *Editor) insertRune(r rune) {
     }
     ed.text[cursor.y] = line
     cursor.x += 1
+    if cursor.x == maxLineLen {
+        if len(ed.text) < maxLines {
+            ed.insertLine()
+        } else {
+            // TODO Better solution
+            cursor.x -= 1
+        }
+    }
 }
 
 func (ed *Editor) insertLine() {
     cursor := &ed.cursor
+    if len(ed.text) == maxLines {
+        // TODO Handle this
+        return
+    }
     if cursor.y == len(ed.text) - 1 {
         line := make([]rune, 0)
         ed.text = append(ed.text, line)
