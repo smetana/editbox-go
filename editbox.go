@@ -16,9 +16,14 @@ type Cursor struct {
     y int
 }
 
+type Line struct {
+    text []rune
+    nl bool
+}
+
 type Editor struct {
     width, height int
-    text [][]rune
+    lines []Line
     cursor Cursor
     lastx int
 }
@@ -27,8 +32,9 @@ func NewEditor(width, height int) *Editor {
     var ed Editor
     ed.width = width
     ed.height = height
-    ed.text = make([][]rune, 1)
-    ed.text[0] = make([]rune, 0)
+    ed.lines = make([]Line, 1)
+    ed.lines[0].text = make([]rune, 0)
+    ed.lines[0].nl = false
     ed.cursor.x = 0
     ed.cursor.y = 0
     return &ed
@@ -36,26 +42,28 @@ func NewEditor(width, height int) *Editor {
 
 func (ed *Editor) insertRune(r rune) {
     cursor := &ed.cursor
-    line := ed.text[cursor.y]
+    line := ed.lines[cursor.y]
     switch {
     // Cursor is at the end of the box
     // and last symbol already exists
     case cursor.x == ed.width - 1 &&
             cursor.y == ed.height - 1 &&
-            len(line) == ed.width:
-        line[cursor.x] = r
-    case cursor.x == len(line) - 1:
-        line = append(line, r)
+            len(line.text) == ed.width:
+        line.text[cursor.x] = r
+    case cursor.x == len(line.text) - 1:
+        line.text = append(line.text, r)
+    case len(line.text) + 1 > ed.width:
+        return
     default:
-        line = append(line, ' ')
-        copy(line[cursor.x+1:], line[cursor.x:])
-        line[cursor.x] = r
+        line.text = append(line.text, ' ')
+        copy(line.text[cursor.x+1:], line.text[cursor.x:])
+        line.text[cursor.x] = r
     }
-    ed.text[cursor.y] = line
+    ed.lines[cursor.y] = line
     cursor.x += 1
     if cursor.x == ed.width {
-        if len(ed.text) < ed.height {
-            ed.insertLine()
+        if len(ed.lines) < ed.height {
+            ed.insertLine(false)
         } else {
             // TODO Better solution
             cursor.x -= 1
@@ -64,29 +72,30 @@ func (ed *Editor) insertRune(r rune) {
     ed.lastx = cursor.x
 }
 
-func (ed *Editor) insertLine() {
+func (ed *Editor) insertLine(nl bool) {
     cursor := &ed.cursor
-    if len(ed.text) == ed.height {
+    if len(ed.lines) == ed.height {
         // TODO Handle this
         return
     }
-    if cursor.y == len(ed.text) - 1 {
-        line := make([]rune, 0)
-        ed.text = append(ed.text, line)
-    } else {
-        newLine := make([]rune, 0)
-        ed.text = append(ed.text, newLine)
-        copy(ed.text[cursor.y+2:], ed.text[cursor.y+1:])
-        ed.text[cursor.y+1] = newLine
+    line := new(Line)
+    ed.lines = append(ed.lines, *line)
+    if cursor.y < len(ed.lines) - 1 {
+        copy(ed.lines[cursor.y+2:], ed.lines[cursor.y+1:])
+        ed.lines[cursor.y+1] = *line
     }
-    currentLine := ed.text[cursor.y]
-    if cursor.x < len(currentLine) {
-        left := make([]rune, cursor.x)
-        copy(left, currentLine[:cursor.x])
-        right := make([]rune, len(currentLine) - cursor.x)
-        copy(right, currentLine[cursor.x:])
-        ed.text[cursor.y] = left
-        ed.text[cursor.y+1] = right
+    currentLine := &ed.lines[cursor.y]
+    if cursor.x < len(currentLine.text) {
+        left, right := new(Line), new(Line)
+        left.text = make([]rune, cursor.x)
+        copy(left.text, currentLine.text[:cursor.x])
+        left.nl = nl
+        right.text = make([]rune, len(currentLine.text) - cursor.x)
+        copy(right.text, currentLine.text[cursor.x:])
+        ed.lines[cursor.y] = *left
+        ed.lines[cursor.y+1] = *right
+    } else {
+        currentLine.nl = nl
     }
     cursor.y += 1
     cursor.x = 0
@@ -94,18 +103,18 @@ func (ed *Editor) insertLine() {
 }
 
 func (ed *Editor) moveCursorRight() {
-    if len(ed.text) == 0 {
+    if len(ed.lines) == 0 {
         return
     }
     cursor := &ed.cursor
-    line := ed.text[cursor.y]
+    line := ed.lines[cursor.y]
     cursor.x += 1
-    if cursor.x >= len(line) {
-        if cursor.y < len(ed.text) - 1 {
+    if cursor.x > len(line.text) {
+        if cursor.y < len(ed.lines) - 1 {
             cursor.y += 1
             cursor.x = 0
         } else {
-            cursor.x = len(line)
+            cursor.x = len(line.text)
         }
     }
     ed.lastx = cursor.x
@@ -117,8 +126,8 @@ func (ed *Editor) moveCursorLeft() {
     if cursor.x < 0 {
         if cursor.y > 0 {
             cursor.y -= 1
-            line := ed.text[cursor.y]
-            cursor.x = len(line) - 1
+            line := ed.lines[cursor.y]
+            cursor.x = len(line.text)
         } else {
             cursor.x = 0
         }
@@ -132,9 +141,9 @@ func (ed *Editor) moveCursorUp() {
         return
     }
     cursor.y -= 1
-    line := ed.text[cursor.y]
-    if ed.lastx > len(line) {
-        cursor.x = len(line)
+    line := ed.lines[cursor.y]
+    if ed.lastx > len(line.text) {
+        cursor.x = len(line.text)
     } else {
         cursor.x = ed.lastx
     }
@@ -143,13 +152,13 @@ func (ed *Editor) moveCursorUp() {
 // TODO Code duplucation
 func (ed *Editor) moveCursorDown() {
     cursor := &ed.cursor
-    if cursor.y == len(ed.text) - 1 {
+    if cursor.y == len(ed.lines) - 1 {
         return
     }
     cursor.y += 1
-    line := ed.text[cursor.y]
-    if ed.lastx > len(line) {
-        cursor.x = len(line)
+    line := ed.lines[cursor.y]
+    if ed.lastx > len(line.text) {
+        cursor.x = len(line.text)
     } else {
         cursor.x = ed.lastx
     }
@@ -160,9 +169,12 @@ func (ed *Editor) Draw() {
     termbox.Clear(coldef, coldef);
     cursor := ed.cursor
 
-    for y, line := range ed.text {
-        for x, r := range line {
+    for y, line := range ed.lines {
+        for x, r := range line.text {
             termbox.SetCell(x, y, r, coldef, coldef)
+        }
+        if line.nl {
+            termbox.SetCell(ed.width+2, y, '$', coldef, coldef)
         }
     }
     termbox.SetCursor(cursor.x, cursor.y)
@@ -171,14 +183,14 @@ func (ed *Editor) Draw() {
 
 /*
 func formatEditor(ed *Editor) {
-    for i:=0; i<=len(ed.text); i++ {
+    for i:=0; i<=len(ed.lines); i++ {
         fmt.Println("")
     }
     for i:=0; i<=10; i++ {
         fmt.Printf("%50s\n", " ")
     }
     fmt.Printf("%v %40s\n", ed.cursor, " ")
-    for i, line := range ed.text {
+    for i, line := range ed.lines {
         fmt.Printf("%v: %v\n", i, line)
     }
 }
@@ -211,7 +223,7 @@ loop:
 			case termbox.KeyArrowDown:
                  ed.moveCursorDown()
 			case termbox.KeyEnter:
-                 ed.insertLine()
+                 ed.insertLine(true)
 			case termbox.KeySpace:
                  ed.insertRune(' ')
 			default:
