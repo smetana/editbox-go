@@ -21,6 +21,19 @@ type Line struct {
     nl bool
 }
 
+func (l *Line) insertRune(pos int, r rune) {
+    // TODO Raise error on invalid position
+    // Append
+    if pos == len(l.text) - 1 {
+        l.text = append(l.text, r)
+    // Insert
+    } else {
+        l.text = append(l.text, ' ')
+        copy(l.text[pos+1:], l.text[pos:])
+        l.text[pos] = r
+    }
+}
+
 type Editor struct {
     width, height int
     lines []Line
@@ -49,15 +62,13 @@ func (ed *Editor) insertRune(r rune) {
     case cursor.x == ed.width - 1 &&
             cursor.y == ed.height - 1 &&
             len(line.text) == ed.width:
-        line.text[cursor.x] = r
-    case cursor.x == len(line.text) - 1:
-        line.text = append(line.text, r)
+        return
+    // TODO Move last line character to
+    /// next line
     case len(line.text) + 1 > ed.width:
         return
     default:
-        line.text = append(line.text, ' ')
-        copy(line.text[cursor.x+1:], line.text[cursor.x:])
-        line.text[cursor.x] = r
+        line.insertRune(cursor.x, r)
     }
     ed.lines[cursor.y] = line
     cursor.x += 1
@@ -201,7 +212,7 @@ func main() {
     check(err)
 	defer termbox.Close()
 	termbox.SetInputMode(termbox.InputEsc)
-    ed := NewEditor(40, 20)
+    ed := NewEditor(5, 5)
     //formatEditor(ed)
     ed.Draw()
 
