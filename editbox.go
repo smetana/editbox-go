@@ -32,11 +32,11 @@ func (l *Line) checkPosition(pos int) {
 func (l *Line) insertRune(pos int, r rune) {
     l.checkPosition(pos)
     // Append
-    if pos >= len(l.text) - 1 {
+    if pos == len(l.text) {
         l.text = append(l.text, r)
     // Insert
     } else {
-        l.text = append(l.text, ' ')
+        l.text = append(l.text, rune(0))
         copy(l.text[pos+1:], l.text[pos:])
         l.text[pos] = r
     }
@@ -83,73 +83,27 @@ func (ed *Editor) Text() string {
 func (ed *Editor) insertRune(r rune) {
     cursor := &ed.cursor
     line := ed.lines[cursor.y]
-    switch {
-    // Cursor is at the end of the box
-    // and last symbol already exists
-    case cursor.x == ed.width - 1 &&
-            cursor.y == ed.height - 1 &&
-            len(line.text) == ed.width:
-        return
-    // TODO Move last line character to
-    /// next line
-    case len(line.text) + 1 > ed.width:
-        return
-    default:
-        line.insertRune(cursor.x, r)
-    }
-    ed.lines[cursor.y] = line
+    line.insertRune(cursor.x, r)
     cursor.x += 1
-    if cursor.x == ed.width {
-        if len(ed.lines) < ed.height {
-            ed.insertLine(false)
-        } else {
-            // TODO Better solution
-            cursor.x -= 1
-        }
-    }
-    ed.lastx = cursor.x
-}
-
-func (ed *Editor) insertLine(nl bool) {
-    /*
-    cursor := &ed.cursor
-    if len(ed.lines) == ed.height {
-        // TODO Handle this
-        return
-    }
-    line := new(Line)
-    ed.lines = append(ed.lines, *line)
-    if cursor.y < len(ed.lines) - 1 {
+    if r == '\n' {
+        left, right := line.split(cursor.x)
+        ed.lines = append(ed.lines, *(new(Line)))
         copy(ed.lines[cursor.y+2:], ed.lines[cursor.y+1:])
-        ed.lines[cursor.y+1] = *line
-    }
-    currentLine := &ed.lines[cursor.y]
-    if cursor.x < len(currentLine.text) {
-        left, right := new(Line), new(Line)
-        left.text = make([]rune, cursor.x)
-        copy(left.text, currentLine.text[:cursor.x])
-        left.nl = nl
-        right.text = make([]rune, len(currentLine.text) - cursor.x)
-        copy(right.text, currentLine.text[cursor.x:])
         ed.lines[cursor.y] = *left
         ed.lines[cursor.y+1] = *right
+        cursor.y += 1
+        cursor.x = 0
     } else {
-        currentLine.nl = nl
+        ed.lines[cursor.y] = line
     }
-    cursor.y += 1
-    cursor.x = 0
     ed.lastx = cursor.x
-    */
 }
 
 func (ed *Editor) moveCursorRight() {
-    if len(ed.lines) == 0 {
-        return
-    }
     cursor := &ed.cursor
     line := ed.lines[cursor.y]
     cursor.x += 1
-    if cursor.x > len(line.text) {
+    if cursor.x >= len(line.text) {
         if cursor.y < len(ed.lines) - 1 {
             cursor.y += 1
             cursor.x = 0
@@ -167,7 +121,7 @@ func (ed *Editor) moveCursorLeft() {
         if cursor.y > 0 {
             cursor.y -= 1
             line := ed.lines[cursor.y]
-            cursor.x = len(line.text)
+            cursor.x = len(line.text) - 1
         } else {
             cursor.x = 0
         }
@@ -209,6 +163,7 @@ func (ed *Editor) Draw() {
     termbox.Clear(coldef, coldef);
     for y, line := range ed.lines {
         for x, r := range line.text {
+            if r == '\n' { r = '$' }
             termbox.SetCell(x, y, r, coldef, coldef)
         }
     }

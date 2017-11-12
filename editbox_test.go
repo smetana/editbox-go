@@ -6,7 +6,7 @@ import (
 
 func assertEqual(t *testing.T, actual, expected interface{}) {
     if actual != expected {
-        t.Errorf("Expected (%T)%v got (%T)%v", expected, expected, actual, actual)
+        t.Errorf("Expected (%T)%+q got (%T)%+q", expected, expected, actual, actual)
     }
 }
 
@@ -28,6 +28,20 @@ func TestLineInsertRune(t *testing.T) {
     assertEqual(t, string(l.text), "Slick")
 }
 
+func TestLineInsertPostion(t *testing.T) {
+    l := new(Line)
+    l.text = []rune("1")
+    l.insertRune(0, '2')
+    assertEqual(t, string(l.text), "21")
+}
+
+func TestLineInsertCornerCase1(t *testing.T) {
+    l := new(Line)
+    l.text = []rune("1")
+    l.insertRune(1, '2')
+    assertEqual(t, string(l.text), "12")
+}
+
 func TestLineInsertOnWrongPosition(t *testing.T) {
     defer func() {
         if r := recover(); r != "position out of range" {
@@ -35,8 +49,8 @@ func TestLineInsertOnWrongPosition(t *testing.T) {
         }
     }()
     l := new(Line)
-    l.text = []rune("Sick")
-    l.insertRune(10, 'l')
+    l.text = []rune("1")
+    l.insertRune(2, '2')
 }
 
 func TestLineInsertNewLine(t *testing.T) {
@@ -67,6 +81,8 @@ func TestLineSplitOnWrongPosition(t *testing.T) {
 
 func TestEditorInsertRune(t *testing.T) {
     ed := NewEditor(5, 5)
+    assertEqual(t, ed.cursor.y, 0)
+    assertEqual(t, ed.cursor.x, 0)
     ed.insertRune('H')
     ed.insertRune('e')
     ed.insertRune('l')
@@ -75,9 +91,26 @@ func TestEditorInsertRune(t *testing.T) {
     assertEqual(t, string(ed.Text()), "Hello")
     assertEqual(t, ed.cursor.y, 0)
     assertEqual(t, ed.cursor.x, 5)
-    ed.insertRune('W')
-    assertEqual(t, string(ed.Text()), "HelloW")
+    ed.insertRune('!')
+    assertEqual(t, string(ed.Text()), "Hello!")
     assertEqual(t, ed.cursor.y, 0)
-    assertEqual(t, ed.cursor.x, 5)
+    assertEqual(t, ed.cursor.x, 6)
+}
+
+func TestEditorInsertOnCursorPosition(t *testing.T) {
+    ed := NewEditor(5, 5)
+    assertEqual(t, ed.cursor.y, 0)
+    assertEqual(t, ed.cursor.x, 0)
+    ed.insertRune('1')
+    assertEqual(t, ed.cursor.y, 0)
+    assertEqual(t, ed.cursor.x, 1)
+    assertEqual(t, string(ed.Text()), "1")
+    ed.moveCursorLeft()
+    assertEqual(t, ed.cursor.y, 0)
+    assertEqual(t, ed.cursor.x, 0)
+    ed.insertRune('2')
+    assertEqual(t, string(ed.Text()), "21")
+    assertEqual(t, ed.cursor.y, 0)
+    assertEqual(t, ed.cursor.x, 1)
 }
 
