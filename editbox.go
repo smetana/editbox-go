@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/nsf/termbox-go"
-//    "fmt"
+    "bytes"
 )
 
 func check(e error) {
@@ -12,19 +12,27 @@ func check(e error) {
 }
 
 type Cursor struct {
-    x int
-    y int
+    x, y int
 }
+
+//----------------------------------------------------------------------------
+// Line
+//----------------------------------------------------------------------------
 
 type Line struct {
     text []rune
-    nl bool
+}
+
+func (l *Line) checkPosition(pos int) {
+    if pos < 0 || pos > len(l.text) {
+        panic("position out of range")
+    }
 }
 
 func (l *Line) insertRune(pos int, r rune) {
-    // TODO Raise error on invalid position
+    l.checkPosition(pos)
     // Append
-    if pos == len(l.text) - 1 {
+    if pos >= len(l.text) - 1 {
         l.text = append(l.text, r)
     // Insert
     } else {
@@ -33,6 +41,19 @@ func (l *Line) insertRune(pos int, r rune) {
         l.text[pos] = r
     }
 }
+
+func (l *Line) split(pos int) (left, right *Line) {
+    l.checkPosition(pos)
+    left, right = l, new(Line)
+    right.text = make([]rune, len(l.text) - pos)
+    copy(right.text, l.text[pos:len(l.text)])
+    left.text = left.text[:pos]
+    return
+}
+
+//----------------------------------------------------------------------------
+// Editor
+//----------------------------------------------------------------------------
 
 type Editor struct {
     width, height int
@@ -46,11 +67,17 @@ func NewEditor(width, height int) *Editor {
     ed.width = width
     ed.height = height
     ed.lines = make([]Line, 1)
-    ed.lines[0].text = make([]rune, 0)
-    ed.lines[0].nl = false
     ed.cursor.x = 0
     ed.cursor.y = 0
     return &ed
+}
+
+func (ed *Editor) Text() string {
+    var b bytes.Buffer
+    for _, l := range ed.lines {
+        b.WriteString(string(l.text))
+    }
+    return b.String()
 }
 
 func (ed *Editor) insertRune(r rune) {
@@ -84,6 +111,7 @@ func (ed *Editor) insertRune(r rune) {
 }
 
 func (ed *Editor) insertLine(nl bool) {
+    /*
     cursor := &ed.cursor
     if len(ed.lines) == ed.height {
         // TODO Handle this
@@ -111,6 +139,7 @@ func (ed *Editor) insertLine(nl bool) {
     cursor.y += 1
     cursor.x = 0
     ed.lastx = cursor.x
+    */
 }
 
 func (ed *Editor) moveCursorRight() {
@@ -178,42 +207,22 @@ func (ed *Editor) moveCursorDown() {
 func (ed *Editor) Draw() {
     coldef := termbox.ColorDefault
     termbox.Clear(coldef, coldef);
-    cursor := ed.cursor
-
     for y, line := range ed.lines {
         for x, r := range line.text {
             termbox.SetCell(x, y, r, coldef, coldef)
         }
-        if line.nl {
-            termbox.SetCell(ed.width+2, y, '$', coldef, coldef)
-        }
     }
-    termbox.SetCursor(cursor.x, cursor.y)
+    termbox.SetCursor(ed.cursor.x, ed.cursor.y)
     termbox.Flush()
 }
 
-/*
-func formatEditor(ed *Editor) {
-    for i:=0; i<=len(ed.lines); i++ {
-        fmt.Println("")
-    }
-    for i:=0; i<=10; i++ {
-        fmt.Printf("%50s\n", " ")
-    }
-    fmt.Printf("%v %40s\n", ed.cursor, " ")
-    for i, line := range ed.lines {
-        fmt.Printf("%v: %v\n", i, line)
-    }
-}
-*/
 
 func main() {
     err := termbox.Init()
     check(err)
 	defer termbox.Close()
 	termbox.SetInputMode(termbox.InputEsc)
-    ed := NewEditor(5, 5)
-    //formatEditor(ed)
+    ed := NewEditor(10, 10)
     ed.Draw()
 
 loop:
@@ -230,11 +239,11 @@ loop:
 			case termbox.KeyArrowRight:
                  ed.moveCursorRight()
 			case termbox.KeyArrowUp:
-                 ed.moveCursorUp()
+                 //ed.moveCursorUp()
 			case termbox.KeyArrowDown:
-                 ed.moveCursorDown()
+                 //ed.moveCursorDown()
 			case termbox.KeyEnter:
-                 ed.insertLine(true)
+                 ed.insertRune('\n')
 			case termbox.KeySpace:
                  ed.insertRune(' ')
 			default:
@@ -245,9 +254,8 @@ loop:
 		case termbox.EventError:
 			panic(ev.Err)
         default:
-            // TODO Eats CPU. Use time.Sleep ?
+            // TODO
         }
-        //formatEditor(ed)
         ed.Draw()
     }
 }
