@@ -4,11 +4,25 @@ import (
 	"testing"
 )
 
+// ----------------------------------------------------------------------------
+// Support
+// ----------------------------------------------------------------------------
+
 func assertEqual(t *testing.T, actual, expected interface{}) {
     if actual != expected {
         t.Errorf("Expected (%T)%+q got (%T)%+q", expected, expected, actual, actual)
     }
 }
+
+func (ed *Editor) setText(text string) {
+    for _, s := range text {
+        ed.insertRune(rune(s))
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Tests
+// ----------------------------------------------------------------------------
 
 func TestLineSimpleInsertRune(t *testing.T) {
     l := new(Line)
@@ -137,5 +151,14 @@ func TestEditorInsertOnCursorPosition(t *testing.T) {
     assertEqual(t, ed.cursor.y, 0)
     assertEqual(t, ed.cursor.x, 1)
 }
+
+func TestEditorCurrentLine(t *testing.T) {
+    ed := NewEditor(5, 5)
+    ed.setText("Hello World!\nSecond Line\nThird Line")
+    ed.cursor.x = 2
+    ed.cursor.y = 1
+    assertEqual(t, string(ed.currentLine().text), "Second Line\n")
+}
+
 
 // TODO Add tests for cursor navigation

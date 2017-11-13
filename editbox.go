@@ -89,9 +89,13 @@ func (ed *Editor) Text() string {
     return b.String()
 }
 
+func (ed *Editor) currentLine() *Line {
+    return &ed.lines[ed.cursor.y]
+}
+
 func (ed *Editor) insertRune(r rune) {
     cursor := &ed.cursor
-    line := ed.lines[cursor.y]
+    line := ed.currentLine()
     line.insertRune(cursor.x, r)
     cursor.x += 1
     if r == '\n' {
@@ -102,15 +106,13 @@ func (ed *Editor) insertRune(r rune) {
         ed.lines[cursor.y+1] = *right
         cursor.y += 1
         cursor.x = 0
-    } else {
-        ed.lines[cursor.y] = line
     }
     ed.lastx = cursor.x
 }
 
 func (ed *Editor) moveCursorRight() {
     cursor := &ed.cursor
-    line := ed.lines[cursor.y]
+    line := ed.currentLine()
     cursor.x += 1
     if cursor.x >= len(line.text) {
         if cursor.y < len(ed.lines) - 1 {
@@ -129,7 +131,7 @@ func (ed *Editor) moveCursorLeft() {
     if cursor.x < 0 {
         if cursor.y > 0 {
             cursor.y -= 1
-            line := ed.lines[cursor.y]
+            line := ed.currentLine()
             cursor.x = len(line.text) - 1
         } else {
             cursor.x = 0
@@ -143,7 +145,7 @@ func (ed *Editor) moveCursorVert(dy int) {
     if cursor.y + dy < 0 { return }
     if cursor.y + dy > len(ed.lines) - 1 { return }
     cursor.y += dy
-    line := ed.lines[cursor.y]
+    line := ed.currentLine()
     if ed.lastx >= len(line.text) {
         cursor.x = len(line.text) - 1
     } else {
