@@ -101,17 +101,22 @@ func (ed *Editor) currentLine() *Line {
     return &ed.lines[ed.cursor.y]
 }
 
+func (ed *Editor) splitLine(x, y int) {
+    line := &ed.lines[y]
+    left, right := line.split(x)
+    ed.lines = append(ed.lines, *(new(Line)))
+    copy(ed.lines[y+2:], ed.lines[y+1:])
+    ed.lines[y] = *left
+    ed.lines[y+1] = *right
+}
+
 func (ed *Editor) insertRune(r rune) {
     cursor := &ed.cursor
     line := ed.currentLine()
     line.insertRune(cursor.x, r)
     cursor.x += 1
     if r == '\n' {
-        left, right := line.split(cursor.x)
-        ed.lines = append(ed.lines, *(new(Line)))
-        copy(ed.lines[cursor.y+2:], ed.lines[cursor.y+1:])
-        ed.lines[cursor.y] = *left
-        ed.lines[cursor.y+1] = *right
+        ed.splitLine(cursor.x, cursor.y)
         cursor.y += 1
         cursor.x = 0
     }
