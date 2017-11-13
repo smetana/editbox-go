@@ -202,8 +202,12 @@ func (ed *Editor) Draw() {
     termbox.Clear(coldef, coldef);
     for y, line := range ed.lines {
         for x, r := range line.text {
-            if r == '\n' { r = '$' } // TODO remove debug
-            termbox.SetCell(x, y, r, coldef, coldef)
+            if r == '\n' {
+				// TODO Remove debug
+	            termbox.SetCell(x, y, '$', termbox.ColorYellow, coldef)
+			} else {
+	            termbox.SetCell(x, y, r, coldef, coldef)
+			}
         }
     }
     termbox.SetCursor(ed.cursor.x, ed.cursor.y)
