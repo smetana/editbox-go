@@ -23,14 +23,14 @@ type Line struct {
     text []rune
 }
 
-func (l *Line) checkPosition(pos int) {
-    if pos < 0 || pos > len(l.text) {
-        panic("position out of range")
+func (l *Line) checkXPosition(x int) {
+    if x < 0 || x > len(l.text) {
+        panic("x position out of range")
     }
 }
 
 func (l *Line) insertRune(pos int, r rune) {
-    l.checkPosition(pos)
+    l.checkXPosition(pos)
     // Append
     if pos == len(l.text) {
         l.text = append(l.text, r)
@@ -43,7 +43,7 @@ func (l *Line) insertRune(pos int, r rune) {
 }
 
 func (l *Line) split(pos int) (left, right *Line) {
-    l.checkPosition(pos)
+    l.checkXPosition(pos)
     left, right = l, new(Line)
     right.text = make([]rune, len(l.text) - pos)
     copy(right.text, l.text[pos:len(l.text)])
@@ -51,13 +51,17 @@ func (l *Line) split(pos int) (left, right *Line) {
     return
 }
 
-func (l *Line) deleteRune(pos int) {
-    l.checkPosition(pos)
+func (l *Line) deleteRune(pos int) rune {
+    l.checkXPosition(pos)
     if pos < len(l.text) {
+		r := l.text[pos]
         copy(l.text[pos:], l.text[pos+1:])
         l.text[len(l.text)-1] = rune(0)
         l.text = l.text[:len(l.text)-1]
-    }
+		return r
+    } else {
+		return rune(0)
+	}
 }
 
 //----------------------------------------------------------------------------
@@ -108,6 +112,45 @@ func (ed *Editor) insertRune(r rune) {
         cursor.x = 0
     }
     ed.lastx = cursor.x
+}
+
+func (ed *Editor) checkYPosition(y int) {
+    if y < 0 || y > len(ed.lines) {
+        panic("y position out of range")
+    }
+}
+
+// TODO Better name
+func (ed *Editor) concatNextLine() {
+	cursor := &ed.cursor
+	left := &ed.lines[cursor.y]
+	right := &ed.lines[cursor.y+1]
+	left.text = append(left.text, right.text...)
+    if cursor.y == len(ed.lines)-2 {
+        ed.lines = ed.lines[:cursor.y+1]
+    } else {
+        copy(ed.lines[cursor.y+1:], ed.lines[cursor.y+2:])
+        ed.lines[len(ed.lines)-1] = *(new(Line))
+        ed.lines = ed.lines[:len(ed.lines)-1]
+    }
+}
+
+func (ed *Editor) deleteRuneBeforeCursor() {
+    cursor := &ed.cursor
+    if cursor.x == 0 && cursor.y == 0 {
+        return
+    }
+    ed.moveCursorLeft()
+	ed.deleteRuneAtCursor()
+}
+
+func (ed *Editor) deleteRuneAtCursor() {
+    cursor := &ed.cursor
+    line := ed.currentLine()
+    r := line.deleteRune(cursor.x)
+	if r == '\n' && cursor.y < len(ed.lines) - 1 {
+		ed.concatNextLine()
+	}
 }
 
 func (ed *Editor) moveCursorRight() {
@@ -183,8 +226,6 @@ loop:
 			switch ev.Key {
 			case termbox.KeyEsc:
 				break loop
-			//case termbox.KeyBackspace, termbox.KeyBackspace2:
-            //     ed.DeleteRuneBeforeCursor()
 			case termbox.KeyArrowLeft:
                  ed.moveCursorLeft()
 			case termbox.KeyArrowRight:
@@ -193,6 +234,10 @@ loop:
                  ed.moveCursorVert(-1)
 			case termbox.KeyArrowDown:
                  ed.moveCursorVert(+1)
+			case termbox.KeyBackspace, termbox.KeyBackspace2:
+                 ed.deleteRuneBeforeCursor()
+            case termbox.KeyDelete:
+                 ed.deleteRuneAtCursor()
 			case termbox.KeyEnter:
                  ed.insertRune('\n')
 			case termbox.KeySpace:
