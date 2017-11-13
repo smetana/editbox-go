@@ -51,6 +51,15 @@ func (l *Line) split(pos int) (left, right *Line) {
     return
 }
 
+func (l *Line) deleteRune(pos int) {
+    l.checkPosition(pos)
+    if pos < len(l.text) {
+        copy(l.text[pos:], l.text[pos+1:])
+        l.text[len(l.text)-1] = rune(0)
+        l.text = l.text[:len(l.text)-1]
+    }
+}
+
 //----------------------------------------------------------------------------
 // Editor
 //----------------------------------------------------------------------------
@@ -148,7 +157,7 @@ func (ed *Editor) Draw() {
     termbox.Clear(coldef, coldef);
     for y, line := range ed.lines {
         for x, r := range line.text {
-            if r == '\n' { r = '$' }
+            if r == '\n' { r = '$' } // TODO remove debug
             termbox.SetCell(x, y, r, coldef, coldef)
         }
     }

@@ -79,6 +79,30 @@ func TestLineSplitOnWrongPosition(t *testing.T) {
     _,_ = l.split(10)
 }
 
+func TestLineDeleteOnWrongPosition(t *testing.T) {
+    defer func() {
+        if r := recover(); r != "position out of range" {
+            t.Errorf("Wrong panic: %+q", r)
+        }
+    }()
+    l := new(Line)
+    l.text = []rune("1")
+    l.deleteRune(2)
+}
+
+func TestLineDelete(t *testing.T) {
+    l := new(Line)
+    l.text = []rune("12")
+    l.deleteRune(1)
+    assertEqual(t, string(l.text), "1")
+    l.text = []rune("12")
+    l.deleteRune(0)
+    assertEqual(t, string(l.text), "2")
+    l.text = []rune("")
+    l.deleteRune(0)
+    assertEqual(t, string(l.text), "")
+}
+
 func TestEditorInsertRune(t *testing.T) {
     ed := NewEditor(5, 5)
     assertEqual(t, ed.cursor.y, 0)
