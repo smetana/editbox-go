@@ -229,7 +229,7 @@ func TestLineLastRune(t *testing.T) {
 // ----------------------------------------------------------------------------
 
 func TestEditorInsertRune(t *testing.T) {
-    ed := NewEditor(5, 5)
+    ed := NewEditor(5, 5, false)
     assertEqual(t, ed.cursor.y, 0)
     assertEqual(t, ed.cursor.x, 0)
     ed.insertRune('H')
@@ -247,7 +247,7 @@ func TestEditorInsertRune(t *testing.T) {
 }
 
 func TestEditorInsertOnCursorPosition(t *testing.T) {
-    ed := NewEditor(5, 5)
+    ed := NewEditor(5, 5, false)
     assertEqual(t, ed.cursor.y, 0)
     assertEqual(t, ed.cursor.x, 0)
     ed.insertRune('1')
@@ -264,7 +264,7 @@ func TestEditorInsertOnCursorPosition(t *testing.T) {
 }
 
 func TestEditorCurrentLine(t *testing.T) {
-    ed := NewEditor(5, 5)
+    ed := NewEditor(5, 5, false)
     ed.setText("Hello World!\nSecond Line\nThird Line")
     ed.cursor.x = 2
     ed.cursor.y = 1
@@ -272,7 +272,7 @@ func TestEditorCurrentLine(t *testing.T) {
 }
 
 func TestEditorSplitLine(t *testing.T) {
-    ed := NewEditor(5, 5)
+    ed := NewEditor(5, 5, false)
     ed.setText("123\n123\n123")
     ed.splitLine(1, 1)
 	assertEqual(t, ed.toLines(), []string{"123\n", "1", "23\n", "123"})
@@ -282,7 +282,7 @@ func TestEditorSplitLine(t *testing.T) {
 }
 
 func TestMoveCursorLeft(t *testing.T) {
-    ed := NewEditor(5, 5)
+    ed := NewEditor(5, 5, false)
 	ed.insertRune('1')
 	ed.insertRune('2')
 	ed.insertRune('\n')
@@ -295,7 +295,7 @@ func TestMoveCursorLeft(t *testing.T) {
 }
 
 func TestBackspace(t *testing.T) {
-    ed := NewEditor(5, 5)
+    ed := NewEditor(5, 5, false)
 	ed.insertRune('1')
 	ed.insertRune('2')
 	ed.insertRune('\n')
@@ -327,7 +327,7 @@ func TestBackspace(t *testing.T) {
 }
 
 func TestDeleteAtCursor(t *testing.T) {
-    ed := NewEditor(5, 5)
+    ed := NewEditor(5, 5, false)
 	ed.insertRune('1')
 	ed.insertRune('2')
 	ed.insertRune('\n')
@@ -361,7 +361,7 @@ func TestDeleteAtCursor(t *testing.T) {
 }
 
 func TestMoveCursorToLineEnd(t *testing.T) {
-    ed := NewEditor(5, 5)
+    ed := NewEditor(5, 5, false)
 	ed.insertRune('1')
 	ed.insertRune('2')
 	ed.insertRune('\n')

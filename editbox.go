@@ -77,15 +77,17 @@ type Editor struct {
     lines []Line
     cursor Cursor
     lastx int
+    wrap bool
 }
 
-func NewEditor(width, height int) *Editor {
+func NewEditor(width, height int, wrap bool) *Editor {
     var ed Editor
     ed.width = width
     ed.height = height
     ed.lines = make([]Line, 1)
     ed.cursor.x = 0
     ed.cursor.y = 0
+    ed.wrap = wrap
     return &ed
 }
 
@@ -223,7 +225,7 @@ func (ed *Editor) Draw() {
     cBoxX, cBoxY := -1, -1 // cursor
     for y, line := range ed.lines {
         boxY += 1
-        if cursor.y == y {
+        if ed.wrap && cursor.y == y {
             dy := cursor.x / ed.width
             cBoxX = cursor.x - (dy * ed.width)
             cBoxY = boxY + dy
@@ -231,7 +233,7 @@ func (ed *Editor) Draw() {
         boxX = -1
         for _, r := range line.text {
             boxX += 1
-            if boxX == ed.width {
+            if ed.wrap && boxX == ed.width {
                 boxX = 0
                 boxY += 1
             }
@@ -243,8 +245,12 @@ func (ed *Editor) Draw() {
 			}
         }
     }
-    if cBoxY < 0 {
-        cBoxX, cBoxY = 0, boxY + 1
+    if !ed.wrap {
+        cBoxX, cBoxY = cursor.x, cursor.y
+    } else {
+        if cBoxY < 0 {
+            cBoxX, cBoxY = 0, boxY + 1
+        }
     }
     termbox.SetCursor(cBoxX, cBoxY)
     termbox.Flush()
@@ -256,7 +262,7 @@ func main() {
     check(err)
 	defer termbox.Close()
 	termbox.SetInputMode(termbox.InputEsc)
-    ed := NewEditor(10, 10)
+    ed := NewEditor(20, 10, false)
     ed.Draw()
 
 loop:
