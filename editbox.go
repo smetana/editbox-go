@@ -198,8 +198,8 @@ func (ed *Editor) Draw() {
     for y, line := range ed.lines {
         for x, r := range line.text {
             if r == '\n' {
-				// TODO Remove debug
-	            termbox.SetCell(x, y, '$', termbox.ColorYellow, coldef)
+				// TODO Remove debug ???
+	            termbox.SetCell(x, y, '␤', coldef, coldef)
 			} else {
 	            termbox.SetCell(x, y, r, coldef, coldef)
 			}
