@@ -120,20 +120,6 @@ func (ed *Editor) checkYPosition(y int) {
     }
 }
 
-// TODO Better name
-func (ed *Editor) concatNextLine() {
-	cursor := &ed.cursor
-	left := &ed.lines[cursor.y]
-	right := &ed.lines[cursor.y+1]
-	left.text = append(left.text, right.text...)
-    if cursor.y == len(ed.lines)-2 {
-        ed.lines = ed.lines[:cursor.y+1]
-    } else {
-        copy(ed.lines[cursor.y+1:], ed.lines[cursor.y+2:])
-        ed.lines[len(ed.lines)-1] = *(new(Line))
-        ed.lines = ed.lines[:len(ed.lines)-1]
-    }
-}
 
 func (ed *Editor) deleteRuneBeforeCursor() {
     cursor := &ed.cursor
@@ -149,7 +135,16 @@ func (ed *Editor) deleteRuneAtCursor() {
     line := ed.currentLine()
     r := line.deleteRune(cursor.x)
 	if r == '\n' && cursor.y < len(ed.lines) - 1 {
-		ed.concatNextLine()
+        left := &ed.lines[cursor.y]
+        right := &ed.lines[cursor.y+1]
+        left.text = append(left.text, right.text...)
+        if cursor.y == len(ed.lines)-2 {
+            ed.lines = ed.lines[:cursor.y+1]
+        } else {
+            copy(ed.lines[cursor.y+1:], ed.lines[cursor.y+2:])
+            ed.lines[len(ed.lines)-1] = *(new(Line))
+            ed.lines = ed.lines[:len(ed.lines)-1]
+        }
 	}
 }
 
