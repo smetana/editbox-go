@@ -219,34 +219,34 @@ func (ed *Editor) Draw() {
     coldef := termbox.ColorDefault
     termbox.Clear(coldef, coldef);
     cursor := &ed.cursor
-    vX, vY := -1, -1
-    cursorVX, cursorVY := -1, -1
+    boxX, boxY := -1, -1
+    cBoxX, cBoxY := -1, -1 // cursor
     for y, line := range ed.lines {
-        vY += 1
+        boxY += 1
         if cursor.y == y {
             dy := cursor.x / ed.width
-            cursorVX = cursor.x - (dy * ed.width)
-            cursorVY = vY + dy
+            cBoxX = cursor.x - (dy * ed.width)
+            cBoxY = boxY + dy
         }
-        vX = -1
+        boxX = -1
         for _, r := range line.text {
-            vX += 1
-            if vX == ed.width {
-                vX = 0
-                vY += 1
+            boxX += 1
+            if boxX == ed.width {
+                boxX = 0
+                boxY += 1
             }
             if r == '\n' {
 				// TODO Remove debug ???
-	            termbox.SetCell(vX, vY, '␤', coldef, coldef)
+	            termbox.SetCell(boxX, boxY, '␤', coldef, coldef)
 			} else {
-	            termbox.SetCell(vX, vY, r, coldef, coldef)
+	            termbox.SetCell(boxX, boxY, r, coldef, coldef)
 			}
         }
     }
-    if cursorVY < 0 {
-        cursorVX, cursorVY = 0, vY + 1
+    if cBoxY < 0 {
+        cBoxX, cBoxY = 0, boxY + 1
     }
-    termbox.SetCursor(cursorVX, cursorVY)
+    termbox.SetCursor(cBoxX, cBoxY)
     termbox.Flush()
 }
 
