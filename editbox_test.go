@@ -114,3 +114,4 @@ func TestEditorInsertOnCursorPosition(t *testing.T) {
     assertEqual(t, ed.cursor.x, 1)
 }
 
+// TODO Add tests for cursor navigation

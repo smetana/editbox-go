@@ -129,34 +129,19 @@ func (ed *Editor) moveCursorLeft() {
     ed.lastx = cursor.x
 }
 
-func (ed *Editor) moveCursorUp() {
+func (ed *Editor) moveCursorVert(dy int) {
     cursor := &ed.cursor
-    if cursor.y == 0 {
-        return
-    }
-    cursor.y -= 1
+    if cursor.y + dy < 0 { return }
+    if cursor.y + dy > len(ed.lines) - 1 { return }
+    cursor.y += dy
     line := ed.lines[cursor.y]
-    if ed.lastx > len(line.text) {
-        cursor.x = len(line.text)
+    if ed.lastx >= len(line.text) {
+        cursor.x = len(line.text) - 1
     } else {
         cursor.x = ed.lastx
     }
 }
 
-// TODO Code duplucation
-func (ed *Editor) moveCursorDown() {
-    cursor := &ed.cursor
-    if cursor.y == len(ed.lines) - 1 {
-        return
-    }
-    cursor.y += 1
-    line := ed.lines[cursor.y]
-    if ed.lastx > len(line.text) {
-        cursor.x = len(line.text)
-    } else {
-        cursor.x = ed.lastx
-    }
-}
 
 func (ed *Editor) Draw() {
     coldef := termbox.ColorDefault
@@ -194,9 +179,9 @@ loop:
 			case termbox.KeyArrowRight:
                  ed.moveCursorRight()
 			case termbox.KeyArrowUp:
-                 //ed.moveCursorUp()
+                 ed.moveCursorVert(-1)
 			case termbox.KeyArrowDown:
-                 //ed.moveCursorDown()
+                 ed.moveCursorVert(+1)
 			case termbox.KeyEnter:
                  ed.insertRune('\n')
 			case termbox.KeySpace:
