@@ -111,6 +111,14 @@ func (ed *Editor) setText(text string) {
     }
 }
 
+func (ed *Editor) toLines() []string {
+    lines := make([]string, len(ed.lines))
+    for i, line := range ed.lines {
+        lines[i] = string(line.text)
+    }
+    return lines
+}
+
 // ----------------------------------------------------------------------------
 // Line Tests
 // ----------------------------------------------------------------------------
@@ -261,6 +269,16 @@ func TestEditorCurrentLine(t *testing.T) {
     ed.cursor.x = 2
     ed.cursor.y = 1
     assertEqual(t, string(ed.currentLine().text), "Second Line\n")
+}
+
+func TestEditorSplitLine(t *testing.T) {
+    ed := NewEditor(5, 5)
+    ed.setText("123\n123\n123")
+    ed.splitLine(1, 1)
+	assertEqual(t, ed.toLines(), []string{"123\n", "1", "23\n", "123"})
+
+    ed.splitLine(3, 3)
+	assertEqual(t, ed.toLines(), []string{"123\n", "1", "23\n", "123", ""})
 }
 
 func TestMoveCursorLeft(t *testing.T) {
