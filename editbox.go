@@ -64,6 +64,10 @@ func (l *Line) deleteRune(pos int) rune {
 	}
 }
 
+func (l *Line) lastRune() rune {
+    return l.text[len(l.text) - 1]
+}
+
 //----------------------------------------------------------------------------
 // Editor
 //----------------------------------------------------------------------------
@@ -178,6 +182,20 @@ func (ed *Editor) moveCursorLeft() {
     ed.lastx = cursor.x
 }
 
+func (ed *Editor) moveCursorToLineStart() {
+    ed.cursor.x, ed.lastx = 0,0
+}
+
+func (ed *Editor) moveCursorToLineEnd() {
+    line := ed.currentLine()
+    if line.lastRune() == '\n' {
+        ed.cursor.x = len(line.text) - 1
+    } else {
+        ed.cursor.x = len(line.text)
+    }
+    ed.lastx = ed.cursor.x
+}
+
 func (ed *Editor) moveCursorVert(dy int) {
     cursor := &ed.cursor
     if cursor.y + dy < 0 { return }
@@ -233,6 +251,10 @@ loop:
                  ed.moveCursorVert(-1)
 			case termbox.KeyArrowDown:
                  ed.moveCursorVert(+1)
+		    case termbox.KeyHome:
+                 ed.moveCursorToLineStart()
+		    case termbox.KeyEnd:
+                 ed.moveCursorToLineEnd()
 			case termbox.KeyBackspace, termbox.KeyBackspace2:
                  ed.deleteRuneBeforeCursor()
             case termbox.KeyDelete:

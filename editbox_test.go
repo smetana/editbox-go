@@ -111,7 +111,7 @@ func (ed *Editor) setText(text string) {
 }
 
 // ----------------------------------------------------------------------------
-// Tests
+// Line Tests
 // ----------------------------------------------------------------------------
 
 func TestLineSimpleInsertRune(t *testing.T) {
@@ -206,6 +206,18 @@ func TestLineDelete(t *testing.T) {
     l.deleteRune(0)
     assertEqual(t, string(l.text), "")
 }
+
+func TestLineLastRune(t *testing.T) {
+    l := new(Line)
+    l.text = []rune("12")
+    assertEqual(t, l.lastRune(), '2')
+    l.text = []rune("12\n")
+    assertEqual(t, l.lastRune(), '\n')
+}
+
+// ----------------------------------------------------------------------------
+// Editor Tests
+// ----------------------------------------------------------------------------
 
 func TestEditorInsertRune(t *testing.T) {
     ed := NewEditor(5, 5)
@@ -327,6 +339,29 @@ func TestDeleteAtCursor(t *testing.T) {
 
 	assertEqual(t, len(ed.lines), 2)
 	assertEqual(t, ed.Text(), "12\n")
+}
+
+func TestMoveCursorToLineEnd(t *testing.T) {
+    ed := NewEditor(5, 5)
+	ed.insertRune('1')
+	ed.insertRune('2')
+	ed.insertRune('\n')
+	ed.insertRune('3')
+	ed.insertRune('\n')
+	ed.insertRune('4')
+	ed.insertRune('5')
+
+	ed.cursor.x = 0
+	ed.cursor.y = 0
+    ed.moveCursorToLineEnd()
+    assertEqual(t, ed.cursor.y, 0)
+    assertEqual(t, ed.cursor.x, 2)
+
+	ed.cursor.x = 0
+	ed.cursor.y = 2
+    ed.moveCursorToLineEnd()
+    assertEqual(t, ed.cursor.y, 2)
+    assertEqual(t, ed.cursor.x, 2)
 }
 
 
