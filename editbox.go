@@ -218,17 +218,35 @@ func (ed *Editor) moveCursorVert(dy int) {
 func (ed *Editor) Draw() {
     coldef := termbox.ColorDefault
     termbox.Clear(coldef, coldef);
+    cursor := &ed.cursor
+    vX, vY := -1, -1
+    cursorVX, cursorVY := -1, -1
     for y, line := range ed.lines {
-        for x, r := range line.text {
+        vY += 1
+        if cursor.y == y {
+            dy := cursor.x / ed.width
+            cursorVX = cursor.x - (dy * ed.width)
+            cursorVY = vY + dy
+        }
+        vX = -1
+        for _, r := range line.text {
+            vX += 1
+            if vX == ed.width {
+                vX = 0
+                vY += 1
+            }
             if r == '\n' {
 				// TODO Remove debug ???
-	            termbox.SetCell(x, y, '␤', coldef, coldef)
+	            termbox.SetCell(vX, vY, '␤', coldef, coldef)
 			} else {
-	            termbox.SetCell(x, y, r, coldef, coldef)
+	            termbox.SetCell(vX, vY, r, coldef, coldef)
 			}
         }
     }
-    termbox.SetCursor(ed.cursor.x, ed.cursor.y)
+    if cursorVY < 0 {
+        cursorVX, cursorVY = 0, vY + 1
+    }
+    termbox.SetCursor(cursorVX, cursorVY)
     termbox.Flush()
 }
 
