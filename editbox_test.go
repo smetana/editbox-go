@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"unicode"
 	"unicode/utf8"
+    "reflect"
 )
 
 // ----------------------------------------------------------------------------
@@ -98,7 +99,7 @@ func isTest(name, prefix string) bool {
 
 
 func assertEqual(t *testing.T, actual, expected interface{}) {
-    if actual != expected {
+    if !reflect.DeepEqual(actual, expected) {
         trace := CallerInfo()
         t.Errorf("Expected (%T)%v got (%T)%v\n%s", expected, expected, actual, actual, trace)
     }
