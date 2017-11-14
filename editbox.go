@@ -216,20 +216,25 @@ func (ed *Editor) moveCursorVert(dy int) {
     }
 }
 
+func (ed *Editor) editorToBox(x, y int) (int, int) {
+    if ed.wrap {
+        dy := 0 // delta between y and bY
+        for i := 0; i < y; i++ {
+            dy += len(ed.lines[i].text) / ed.width
+        }
+        ldy := x / ed.width
+        x = x - (ldy * ed.width)
+        y = y + dy + ldy
+    }
+    return x, y
+}
 
 func (ed *Editor) Draw() {
     coldef := termbox.ColorDefault
     termbox.Clear(coldef, coldef);
-    cursor := &ed.cursor
     boxX, boxY := -1, -1
-    cBoxX, cBoxY := -1, -1 // cursor
-    for y, line := range ed.lines {
+    for _, line := range ed.lines {
         boxY += 1
-        if ed.wrap && cursor.y == y {
-            dy := cursor.x / ed.width
-            cBoxX = cursor.x - (dy * ed.width)
-            cBoxY = boxY + dy
-        }
         boxX = -1
         for _, r := range line.text {
             boxX += 1
@@ -245,13 +250,7 @@ func (ed *Editor) Draw() {
 			}
         }
     }
-    if !ed.wrap {
-        cBoxX, cBoxY = cursor.x, cursor.y
-    } else {
-        if cBoxY < 0 {
-            cBoxX, cBoxY = 0, boxY + 1
-        }
-    }
+    cBoxX, cBoxY := ed.editorToBox(ed.cursor.x, ed.cursor.y)
     termbox.SetCursor(cBoxX, cBoxY)
     termbox.Flush()
 }
@@ -262,7 +261,7 @@ func main() {
     check(err)
 	defer termbox.Close()
 	termbox.SetInputMode(termbox.InputEsc)
-    ed := NewEditor(20, 10, false)
+    ed := NewEditor(20, 10, true)
     ed.Draw()
 
 loop:
