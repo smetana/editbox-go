@@ -73,21 +73,16 @@ func (l *Line) lastRune() rune {
 //----------------------------------------------------------------------------
 
 type Editor struct {
-    width, height int
     lines []Line
     cursor Cursor
     lastx int
-    wrap bool
 }
 
-func NewEditor(width, height int, wrap bool) *Editor {
+func NewEditor() *Editor {
     var ed Editor
-    ed.width = width
-    ed.height = height
     ed.lines = make([]Line, 1)
     ed.cursor.x = 0
     ed.cursor.y = 0
-    ed.wrap = wrap
     return &ed
 }
 
@@ -216,20 +211,41 @@ func (ed *Editor) moveCursorVert(dy int) {
     }
 }
 
-func (ed *Editor) editorToBox(x, y int) (int, int) {
-    if ed.wrap {
+//----------------------------------------------------------------------------
+// EditBox
+//----------------------------------------------------------------------------
+
+type EditBox struct {
+    width, height int
+    editor *Editor
+    wrap bool
+}
+
+func NewEditBox(width, height int, wrap bool) *EditBox {
+    var ebox EditBox
+    ebox.width = width
+    ebox.height = height
+    ebox.editor = NewEditor()
+    ebox.wrap = wrap
+    return &ebox
+}
+
+func (ebox *EditBox) editorToBox(x, y int) (int, int) {
+    if ebox.wrap {
+        ed := ebox.editor
         dy := 0 // delta between y and bY
         for i := 0; i < y; i++ {
-            dy += len(ed.lines[i].text) / ed.width
+            dy += len(ed.lines[i].text) / ebox.width
         }
-        ldy := x / ed.width
-        x = x - (ldy * ed.width)
+        ldy := x / ebox.width
+        x = x - (ldy * ebox.width)
         y = y + dy + ldy
     }
     return x, y
 }
 
-func (ed *Editor) Draw() {
+func (ebox *EditBox) Draw() {
+    ed := ebox.editor
     coldef := termbox.ColorDefault
     termbox.Clear(coldef, coldef);
     boxX, boxY := -1, -1
@@ -238,7 +254,7 @@ func (ed *Editor) Draw() {
         boxX = -1
         for _, r := range line.text {
             boxX += 1
-            if ed.wrap && boxX == ed.width {
+            if ebox.wrap && boxX == ebox.width {
                 boxX = 0
                 boxY += 1
             }
@@ -250,7 +266,7 @@ func (ed *Editor) Draw() {
 			}
         }
     }
-    cBoxX, cBoxY := ed.editorToBox(ed.cursor.x, ed.cursor.y)
+    cBoxX, cBoxY := ebox.editorToBox(ed.cursor.x, ed.cursor.y)
     termbox.SetCursor(cBoxX, cBoxY)
     termbox.Flush()
 }
@@ -261,8 +277,9 @@ func main() {
     check(err)
 	defer termbox.Close()
 	termbox.SetInputMode(termbox.InputEsc)
-    ed := NewEditor(20, 10, true)
-    ed.Draw()
+    ebox := NewEditBox(20, 10, true)
+    ed := ebox.editor
+    ebox.Draw()
 
 loop:
 	for {
@@ -301,6 +318,6 @@ loop:
         default:
             // TODO
         }
-        ed.Draw()
+        ebox.Draw()
     }
 }
