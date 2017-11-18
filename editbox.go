@@ -241,7 +241,7 @@ func (ebox *Editbox) updateLineOffsets() {
         dy := 0 // delta between editor y and box Y
         for y := 0; y < linesCnt; y++ {
             ebox.lineBoxY[y] = y + dy
-            dy += len(ed.lines[y].text) / ebox.width
+            dy += (len(ed.lines[y].text) - 1) / ebox.width
         }
     }
 }

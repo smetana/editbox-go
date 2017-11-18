@@ -384,3 +384,50 @@ func TestMoveCursorToLineEnd(t *testing.T) {
 }
 
 // TODO Add tests for cursor navigation
+
+// ----------------------------------------------------------------------------
+// EditBox Tests
+// ----------------------------------------------------------------------------
+
+func TestEditorToBox(t *testing.T) {
+    eb := NewEditbox(3, 3, true)
+    eb.editor.setText("1234567\n12\n1234\n1")
+    eb.updateLineOffsets()
+    assertEqual(t, eb.lineBoxY, []int{0,3,4,6})
+    x,y := eb.editorToBox(0, 0)
+    assertEqual(t, x, 0)
+    assertEqual(t, y, 0)
+    x,y = eb.editorToBox(4, 0)
+    assertEqual(t, x, 1)
+    assertEqual(t, y, 1)
+    x,y = eb.editorToBox(6, 0)
+    assertEqual(t, x, 0)
+    assertEqual(t, y, 2)
+    x,y = eb.editorToBox(7, 0)
+    assertEqual(t, x, 1)
+    assertEqual(t, y, 2)
+
+    // TODO Wrong. There is no text there
+    x,y = eb.editorToBox(8, 0)
+    assertEqual(t, x, 2)
+    assertEqual(t, y, 2)
+
+    x,y = eb.editorToBox(1, 1)
+    assertEqual(t, x, 1)
+    assertEqual(t, y, 3)
+    x,y = eb.editorToBox(2, 1)
+    assertEqual(t, x, 2)
+    assertEqual(t, y, 3)
+    x,y = eb.editorToBox(1, 2)
+    assertEqual(t, x, 1)
+    assertEqual(t, y, 4)
+    x,y = eb.editorToBox(3, 2)
+    assertEqual(t, x, 0)
+    assertEqual(t, y, 5)
+    x,y = eb.editorToBox(4, 2)
+    assertEqual(t, x, 1)
+    assertEqual(t, y, 5)
+
+    // TODO index out of range
+    // x,y = eb.editorToBox(5, 5)
+}
