@@ -212,10 +212,10 @@ func (ed *Editor) moveCursorVert(dy int) {
 }
 
 //----------------------------------------------------------------------------
-// EditBox
+// Editbox
 //----------------------------------------------------------------------------
 
-type EditBox struct {
+type Editbox struct {
     width, height int
     editor *Editor
     wrap bool
@@ -223,8 +223,8 @@ type EditBox struct {
     lineBoxY []int
 }
 
-func NewEditBox(width, height int, wrap bool) *EditBox {
-    var ebox EditBox
+func NewEditbox(width, height int, wrap bool) *Editbox {
+    var ebox Editbox
     ebox.width = width
     ebox.height = height
     ebox.editor = NewEditor()
@@ -232,7 +232,7 @@ func NewEditBox(width, height int, wrap bool) *EditBox {
     return &ebox
 }
 
-func (ebox *EditBox) updateLineOffsets() {
+func (ebox *Editbox) updateLineOffsets() {
     ed := ebox.editor
     linesCnt := len(ed.lines)
     ebox.lineBoxY = make([]int, linesCnt)
@@ -246,7 +246,7 @@ func (ebox *EditBox) updateLineOffsets() {
     }
 }
 
-func (ebox *EditBox) editorToBox(x, y int) (int, int) {
+func (ebox *Editbox) editorToBox(x, y int) (int, int) {
     if ebox.wrap {
         ldy := x / ebox.width
         x = x - (ldy * ebox.width)
@@ -255,7 +255,7 @@ func (ebox *EditBox) editorToBox(x, y int) (int, int) {
     return x, y
 }
 
-func (ebox *EditBox) Draw() {
+func (ebox *Editbox) Draw() {
     ebox.updateLineOffsets()
     ed := ebox.editor
     coldef := termbox.ColorDefault
@@ -283,7 +283,7 @@ func main() {
     check(err)
 	defer termbox.Close()
 	termbox.SetInputMode(termbox.InputEsc)
-    ebox := NewEditBox(20, 10, true)
+    ebox := NewEditbox(20, 10, true)
     ed := ebox.editor
     ebox.Draw()
 
