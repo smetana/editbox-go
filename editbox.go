@@ -219,6 +219,8 @@ type EditBox struct {
     width, height int
     editor *Editor
     wrap bool
+    // Line y coord in box in wrap mode
+    lineBoxY []int
 }
 
 func NewEditBox(width, height int, wrap bool) *EditBox {
@@ -230,34 +232,38 @@ func NewEditBox(width, height int, wrap bool) *EditBox {
     return &ebox
 }
 
-func (ebox *EditBox) editorToBox(x, y int) (int, int) {
+func (ebox *EditBox) updateLineOffsets() {
+    ed := ebox.editor
+    linesCnt := len(ed.lines)
+    ebox.lineBoxY = make([]int, linesCnt)
     if ebox.wrap {
         ed := ebox.editor
-        dy := 0 // delta between y and bY
-        for i := 0; i < y; i++ {
-            dy += len(ed.lines[i].text) / ebox.width
+        dy := 0 // delta between editor y and box Y
+        for y := 0; y < linesCnt; y++ {
+            ebox.lineBoxY[y] = y + dy
+            dy += len(ed.lines[y].text) / ebox.width
         }
+    }
+}
+
+func (ebox *EditBox) editorToBox(x, y int) (int, int) {
+    if ebox.wrap {
         ldy := x / ebox.width
         x = x - (ldy * ebox.width)
-        y = y + dy + ldy
+        y = ebox.lineBoxY[y] + ldy
     }
     return x, y
 }
 
 func (ebox *EditBox) Draw() {
+    ebox.updateLineOffsets()
     ed := ebox.editor
     coldef := termbox.ColorDefault
     termbox.Clear(coldef, coldef);
-    boxX, boxY := -1, -1
-    for _, line := range ed.lines {
-        boxY += 1
-        boxX = -1
-        for _, r := range line.text {
-            boxX += 1
-            if ebox.wrap && boxX == ebox.width {
-                boxX = 0
-                boxY += 1
-            }
+    var boxX, boxY int
+    for y, line := range ed.lines {
+        for x, r := range line.text {
+            boxX, boxY = ebox.editorToBox(x, y)
             if r == '\n' {
 				// TODO Remove debug ???
 	            termbox.SetCell(boxX, boxY, '␤', coldef, coldef)
