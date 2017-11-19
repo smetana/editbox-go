@@ -281,6 +281,14 @@ func TestEditorSplitLine(t *testing.T) {
 	assertEqual(t, ed.toLines(), []string{"123\n", "1", "23\n", "123", ""})
 }
 
+func TestEditorInsertNewLine(t *testing.T) {
+    ed := NewEditor()
+    ed.setText("12345")
+    assertEqual(t, len(ed.lines), 1)
+    ed.insertRune('\n')
+    assertEqual(t, len(ed.lines), 2)
+}
+
 func TestMoveCursorLeft(t *testing.T) {
     ed := NewEditor()
 	ed.insertRune('1')
