@@ -214,6 +214,13 @@ func (ed *Editor) moveCursorVert(dy int) {
 // Editbox
 //----------------------------------------------------------------------------
 
+type Options struct {
+    fg termbox.Attribute
+    bg termbox.Attribute
+    wrap bool
+    autoexpand bool
+}
+
 type Editbox struct {
     width, height int
     wrap bool
@@ -224,14 +231,14 @@ type Editbox struct {
     cursor Cursor
 }
 
-func NewEditbox(width, height int, wrap bool, fg, bg termbox.Attribute) *Editbox {
+func NewEditbox(width, height int, options Options) *Editbox {
     var ebox Editbox
     ebox.width = width
     ebox.height = height
-    ebox.fg = fg
-    ebox.bg = bg
+    ebox.fg = options.fg
+    ebox.bg = options.bg
     ebox.editor = NewEditor()
-    ebox.wrap = wrap
+    ebox.wrap = options.wrap
     return &ebox
 }
 
@@ -299,7 +306,7 @@ func main() {
 	defer termbox.Close()
 	termbox.SetInputMode(termbox.InputEsc)
     termbox.SetOutputMode(termbox.Output256)
-    ebox := NewEditbox(20, 10, true, 12, 63)
+    ebox := NewEditbox(20, 10, Options{wrap: true, fg: 12, bg: 63})
     ed := ebox.editor
     ebox.Draw()
 
