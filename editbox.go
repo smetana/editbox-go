@@ -126,7 +126,6 @@ func (ed *Editor) checkYPosition(y int) {
     }
 }
 
-
 func (ed *Editor) deleteRuneBeforeCursor() {
     cursor := &ed.cursor
     if cursor.x == 0 && cursor.y == 0 {
@@ -217,16 +216,20 @@ func (ed *Editor) moveCursorVert(dy int) {
 
 type Editbox struct {
     width, height int
-    editor *Editor
     wrap bool
+    fg, bg termbox.Attribute
+    editor *Editor
     // Line y coord in box in wrap mode
     lineBoxY []int
+    cursor Cursor
 }
 
-func NewEditbox(width, height int, wrap bool) *Editbox {
+func NewEditbox(width, height int, wrap bool, fg, bg termbox.Attribute) *Editbox {
     var ebox Editbox
     ebox.width = width
     ebox.height = height
+    ebox.fg = fg
+    ebox.bg = bg
     ebox.editor = NewEditor()
     ebox.wrap = wrap
     return &ebox
@@ -236,14 +239,17 @@ func (ebox *Editbox) updateLineOffsets() {
     ed := ebox.editor
     linesCnt := len(ed.lines)
     ebox.lineBoxY = make([]int, linesCnt)
-    if ebox.wrap {
-        ed := ebox.editor
-        dy := 0 // delta between editor y and box Y
-        for y := 0; y < linesCnt; y++ {
-            ebox.lineBoxY[y] = y + dy
-            dy += (len(ed.lines[y].text) - 1) / ebox.width
+    dy := 0 // delta between editor y and box Y
+    cumulativeOffset := 0
+    for y := 0; y < linesCnt; y++ {
+        ebox.lineBoxY[y] = y + cumulativeOffset
+        if ebox.wrap {
+            dy = (len(ed.lines[y].text) - 1) / ebox.width
+            cumulativeOffset += dy
         }
     }
+    ebox.cursor.x, ebox.cursor.y = ebox.editorToBox(ed.cursor.x, ed.cursor.y)
+    ebox.height = ebox.lineBoxY[linesCnt-1] + dy + 1
 }
 
 func (ebox *Editbox) editorToBox(x, y int) (int, int) {
@@ -260,30 +266,40 @@ func (ebox *Editbox) Draw() {
     ed := ebox.editor
     coldef := termbox.ColorDefault
     termbox.Clear(coldef, coldef);
+    var x, y int
     var boxX, boxY int
+    // Fill background. TODO Optimize with next for
+    for y = 0; y < ebox.height; y++ {
+        for x = 0; x < ebox.width; x++ {
+	        termbox.SetCell(x, y, ' ', ebox.fg, ebox.bg)
+        }
+    }
     for y, line := range ed.lines {
         for x, r := range line.text {
             boxX, boxY = ebox.editorToBox(x, y)
             if r == '\n' {
 				// TODO Remove debug ???
-	            termbox.SetCell(boxX, boxY, '␤', coldef, coldef)
+	            termbox.SetCell(boxX, boxY, '␤', ebox.fg, ebox.bg)
 			} else {
-	            termbox.SetCell(boxX, boxY, r, coldef, coldef)
+	            termbox.SetCell(boxX, boxY, r, ebox.fg, ebox.bg)
 			}
         }
     }
-    cBoxX, cBoxY := ebox.editorToBox(ed.cursor.x, ed.cursor.y)
-    termbox.SetCursor(cBoxX, cBoxY)
+    termbox.SetCursor(ebox.cursor.x, ebox.cursor.y)
     termbox.Flush()
 }
 
+//----------------------------------------------------------------------------
+// main() and support
+//----------------------------------------------------------------------------
 
 func main() {
     err := termbox.Init()
     check(err)
 	defer termbox.Close()
 	termbox.SetInputMode(termbox.InputEsc)
-    ebox := NewEditbox(20, 10, true)
+    termbox.SetOutputMode(termbox.Output256)
+    ebox := NewEditbox(20, 10, true, 12, 63)
     ed := ebox.editor
     ebox.Draw()
 

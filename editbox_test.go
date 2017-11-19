@@ -398,7 +398,7 @@ func TestMoveCursorToLineEnd(t *testing.T) {
 // ----------------------------------------------------------------------------
 
 func TestEditorToBox(t *testing.T) {
-    eb := NewEditbox(3, 3, true)
+    eb := NewEditbox(3, 3, true, 0, 0)
     eb.editor.setText("1234567\n12\n1234\n1")
     eb.updateLineOffsets()
     assertEqual(t, eb.lineBoxY, []int{0,3,4,6})
