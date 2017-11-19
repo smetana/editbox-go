@@ -460,3 +460,24 @@ func TestEditorToBox(t *testing.T) {
     // TODO index out of range
     // x,y = eb.editorToBox(5, 5)
 }
+
+func TestPrevCursor(t *testing.T) {
+    eb := NewEditbox(3, 3, Options{wrap:true})
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 0)
+    assertEqual(t, eb.cursor.y, 0)
+    assertEqual(t, eb.prevCursor.x, 0)
+    assertEqual(t, eb.prevCursor.y, 0)
+    eb.editor.insertRune('a')
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 1)
+    assertEqual(t, eb.cursor.y, 0)
+    assertEqual(t, eb.prevCursor.x, 0)
+    assertEqual(t, eb.prevCursor.y, 0)
+    eb.editor.insertRune('\n')
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 0)
+    assertEqual(t, eb.cursor.y, 1)
+    assertEqual(t, eb.prevCursor.x, 1)
+    assertEqual(t, eb.prevCursor.y, 0)
+}

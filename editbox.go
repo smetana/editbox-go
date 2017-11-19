@@ -225,13 +225,18 @@ type Options struct {
 }
 
 type Editbox struct {
+    editor *Editor
+    cursor Cursor
     width, height int
     wrap bool
+    autoexpand bool
     fg, bg termbox.Attribute
-    editor *Editor
     // Line y coord in box in wrap mode
     lineBoxY []int
-    cursor Cursor
+    virtualHeight int
+    scroll int
+    // Needed to calculate cursor movement direction for scrolling
+    prevCursor Cursor
 }
 
 func NewEditbox(width, height int, options Options) *Editbox {
@@ -242,6 +247,8 @@ func NewEditbox(width, height int, options Options) *Editbox {
     ebox.bg = options.bg
     ebox.editor = NewEditor()
     ebox.wrap = options.wrap
+    ebox.autoexpand = options.autoexpand
+    ebox.scroll = 0
     return &ebox
 }
 
@@ -258,8 +265,9 @@ func (ebox *Editbox) updateLineOffsets() {
             cumulativeOffset += dy
         }
     }
+    ebox.virtualHeight = ebox.lineBoxY[linesCnt-1] + dy + 1
+    ebox.prevCursor = ebox.cursor
     ebox.cursor.x, ebox.cursor.y = ebox.editorToBox(ed.cursor.x, ed.cursor.y)
-    ebox.height = ebox.lineBoxY[linesCnt-1] + dy + 1
 }
 
 func (ebox *Editbox) editorToBox(x, y int) (int, int) {
@@ -271,15 +279,39 @@ func (ebox *Editbox) editorToBox(x, y int) (int, int) {
     return x, y
 }
 
+func (ebox *Editbox) scrollToCursor() {
+    if ebox.cursor.y - ebox.scroll > ebox.height - 1 {
+        ebox.scroll = ebox.cursor.y - ebox.height + 1
+    } else if ebox.cursor.y - ebox.scroll < 0 {
+        ebox.scroll = ebox.cursor.y
+    }
+}
+
 func (ebox *Editbox) Draw() {
     ebox.updateLineOffsets()
+    if !ebox.autoexpand {
+        ebox.scrollToCursor()
+    }
     ed := ebox.editor
     coldef := termbox.ColorDefault
     termbox.Clear(coldef, coldef);
-    var x, y int
-    var boxX, boxY int
+    var (
+        x, y int
+        boxX, boxY int
+        viewX, viewY int
+        visibleHeight int
+    )
+    if ebox.autoexpand {
+        if ebox.virtualHeight > ebox.height {
+            visibleHeight = ebox.virtualHeight
+        } else {
+            visibleHeight = ebox.height
+        }
+    } else {
+        visibleHeight = ebox.height
+    }
     // Fill background. TODO Optimize with next for
-    for y = 0; y < ebox.height; y++ {
+    for y = 0; y < visibleHeight; y++ {
         for x = 0; x < ebox.width; x++ {
 	        termbox.SetCell(x, y, ' ', ebox.fg, ebox.bg)
         }
@@ -287,15 +319,21 @@ func (ebox *Editbox) Draw() {
     for y, line := range ed.lines {
         for x, r := range line.text {
             boxX, boxY = ebox.editorToBox(x, y)
-            if r == '\n' {
-				// TODO Remove debug ???
-	            termbox.SetCell(boxX, boxY, '␤', ebox.fg, ebox.bg)
-			} else {
-	            termbox.SetCell(boxX, boxY, r, ebox.fg, ebox.bg)
-			}
+            //TODO Optimize
+            if boxY < ebox.scroll {
+                continue
+            }
+            viewX = boxX
+            viewY = boxY - ebox.scroll
+            if viewY > ebox.height - 1 && !ebox.autoexpand {
+                break
+            }
+		    // TODO Remove debug ???
+            if r == '\n' { r = '␤'}
+	        termbox.SetCell(viewX, viewY, r, ebox.fg, ebox.bg)
         }
     }
-    termbox.SetCursor(ebox.cursor.x, ebox.cursor.y)
+    termbox.SetCursor(ebox.cursor.x, ebox.cursor.y - ebox.scroll)
     termbox.Flush()
 }
 
@@ -309,7 +347,11 @@ func main() {
 	defer termbox.Close()
 	termbox.SetInputMode(termbox.InputEsc)
     termbox.SetOutputMode(termbox.Output256)
-    ebox := NewEditbox(20, 10, Options{wrap: true, fg: 12, bg: 63})
+    ebox := NewEditbox(20, 10, Options{
+        wrap: true,
+        autoexpand: false,
+        fg: 12,
+        bg: 63})
     ed := ebox.editor
     ebox.Draw()
 
