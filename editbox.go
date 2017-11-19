@@ -203,9 +203,12 @@ func (ed *Editor) moveCursorVert(dy int) {
     if cursor.y + dy > len(ed.lines) - 1 { return }
     cursor.y += dy
     line := ed.currentLine()
-    if ed.lastx >= len(line.text) {
+    switch {
+    case len(line.text) == 0:
+        cursor.x = 0
+    case ed.lastx >= len(line.text):
         cursor.x = len(line.text) - 1
-    } else {
+    default:
         cursor.x = ed.lastx
     }
 }

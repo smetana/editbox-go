@@ -391,7 +391,28 @@ func TestMoveCursorToLineEnd(t *testing.T) {
     assertEqual(t, ed.cursor.x, 2)
 }
 
+
+func TestMoveCursorToEmptyLine(t *testing.T) {
+    ed := NewEditor()
+	ed.insertRune('1')
+	ed.insertRune('2')
+	ed.insertRune('\n')
+    assertEqual(t, ed.cursor.y, 1)
+    assertEqual(t, ed.cursor.x, 0)
+
+    ed.moveCursorVert(-1)
+    assertEqual(t, ed.cursor.y, 0)
+    assertEqual(t, ed.cursor.x, 0)
+
+    ed.moveCursorVert(+1)
+    assertEqual(t, ed.cursor.y, 1)
+    assertEqual(t, ed.cursor.x, 0)
+}
+
+
 // TODO Add tests for cursor navigation
+
+
 
 // ----------------------------------------------------------------------------
 // EditBox Tests
