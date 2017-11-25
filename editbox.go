@@ -383,7 +383,7 @@ func (ebox *Editbox) handleEvent(ev *termbox.Event) bool {
 //----------------------------------------------------------------------------
 
 func mainLoop(ebox *Editbox) {
-    eventQueue := make(chan termbox.Event)
+    eventQueue := make(chan termbox.Event, 256)
 	go func() {
 		for {
 			eventQueue <- termbox.PollEvent()
@@ -396,7 +396,9 @@ func mainLoop(ebox *Editbox) {
             if !ok {
                 return
             }
-            ebox.Draw()
+            if len(eventQueue) == 0 {
+                ebox.Draw()
+            }
         }
 	}
 }
