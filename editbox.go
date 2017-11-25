@@ -337,12 +337,52 @@ func (ebox *Editbox) Draw() {
     termbox.Flush()
 }
 
+func (ebox *Editbox) handleEvent(ev *termbox.Event) bool {
+    ed := ebox.editor
+    switch ev.Type {
+    case termbox.EventKey:
+        switch ev.Key {
+        case termbox.KeyEsc:
+            // Quit
+            return false
+        case termbox.KeyArrowLeft:
+             ed.moveCursorLeft()
+        case termbox.KeyArrowRight:
+             ed.moveCursorRight()
+        case termbox.KeyArrowUp:
+             ed.moveCursorVert(-1)
+        case termbox.KeyArrowDown:
+             ed.moveCursorVert(+1)
+        case termbox.KeyHome:
+             ed.moveCursorToLineStart()
+        case termbox.KeyEnd:
+             ed.moveCursorToLineEnd()
+        case termbox.KeyBackspace, termbox.KeyBackspace2:
+             ed.deleteRuneBeforeCursor()
+        case termbox.KeyDelete:
+             ed.deleteRuneAtCursor()
+        case termbox.KeyEnter:
+             ed.insertRune('\n')
+        case termbox.KeySpace:
+             ed.insertRune(' ')
+        default:
+            if ev.Ch != 0 {
+                ed.insertRune(ev.Ch)
+            }
+        }
+    case termbox.EventError:
+        panic(ev.Err)
+    default:
+        // TODO
+    }
+    return true
+}
+
 //----------------------------------------------------------------------------
 // main() and support
 //----------------------------------------------------------------------------
 
 func mainLoop(ebox *Editbox) {
-    ed := ebox.editor
     eventQueue := make(chan termbox.Event)
 	go func() {
 		for {
@@ -352,40 +392,9 @@ func mainLoop(ebox *Editbox) {
 	for {
         select {
         case ev := <-eventQueue:
-            switch ev.Type {
-            case termbox.EventKey:
-                switch ev.Key {
-                case termbox.KeyEsc:
-                    return
-                case termbox.KeyArrowLeft:
-                     ed.moveCursorLeft()
-                case termbox.KeyArrowRight:
-                     ed.moveCursorRight()
-                case termbox.KeyArrowUp:
-                     ed.moveCursorVert(-1)
-                case termbox.KeyArrowDown:
-                     ed.moveCursorVert(+1)
-                case termbox.KeyHome:
-                     ed.moveCursorToLineStart()
-                case termbox.KeyEnd:
-                     ed.moveCursorToLineEnd()
-                case termbox.KeyBackspace, termbox.KeyBackspace2:
-                     ed.deleteRuneBeforeCursor()
-                case termbox.KeyDelete:
-                     ed.deleteRuneAtCursor()
-                case termbox.KeyEnter:
-                     ed.insertRune('\n')
-                case termbox.KeySpace:
-                     ed.insertRune(' ')
-                default:
-                    if ev.Ch != 0 {
-                        ed.insertRune(ev.Ch)
-                    }
-                }
-            case termbox.EventError:
-                panic(ev.Err)
-            default:
-                // TODO
+            ok := ebox.handleEvent(&ev)
+            if !ok {
+                return
             }
             ebox.Draw()
         }
