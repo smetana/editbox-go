@@ -224,6 +224,14 @@ func TestLineLastRune(t *testing.T) {
     assertEqual(t, l.lastRune(), '\n')
 }
 
+func TestLineLastRuneX(t *testing.T) {
+    l := new(Line)
+    l.text = []rune("12")
+    assertEqual(t, l.lastRuneX(), 2)
+    l.text = []rune("12\n")
+    assertEqual(t, l.lastRuneX(), 2)
+}
+
 // ----------------------------------------------------------------------------
 // Editor Tests
 // ----------------------------------------------------------------------------
@@ -481,3 +489,194 @@ func TestPrevCursor(t *testing.T) {
     assertEqual(t, eb.prevCursor.x, 1)
     assertEqual(t, eb.prevCursor.y, 0)
 }
+
+/*
+Text:
+
+111222333
+444555
+6667778
+
+0
+11122233
+44
+
+In editor with width = 3 should be written as
+
+111
+222
+33␤
+444
+5␤
+666
+777
+8␤
+␤
+0␤
+111
+222
+33␤
+44
+
+*/
+
+func TestMoveDown(t *testing.T) {
+    eb := NewEditbox(3, 3, Options{wrap:true})
+    eb.editor.setText(`11122233
+4445
+6667778
+
+0
+11122233
+44`)
+    eb.editor.cursor.x = 0
+    eb.editor.cursor.y = 0
+    eb.editor.moveCursorRight();
+    eb.editor.moveCursorRight();
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 2)
+    assertEqual(t, eb.cursor.y, 0)
+    eb.moveCursorDown()
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 2)
+    assertEqual(t, eb.cursor.y, 1)
+    eb.moveCursorDown()
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 2)
+    assertEqual(t, eb.cursor.y, 2)
+    eb.moveCursorDown()
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 2)
+    assertEqual(t, eb.cursor.y, 3)
+    eb.moveCursorDown()
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 1)
+    assertEqual(t, eb.cursor.y, 4)
+    eb.moveCursorDown()
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 2)
+    assertEqual(t, eb.cursor.y, 5)
+    eb.moveCursorDown()
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 2)
+    assertEqual(t, eb.cursor.y, 6)
+    eb.moveCursorDown()
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 1)
+    assertEqual(t, eb.cursor.y, 7)
+    eb.moveCursorDown()
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 0)
+    assertEqual(t, eb.cursor.y, 8)
+    eb.moveCursorDown()
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 1)
+    assertEqual(t, eb.cursor.y, 9)
+    eb.moveCursorDown()
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 2)
+    assertEqual(t, eb.cursor.y, 10)
+    eb.moveCursorDown()
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 2)
+    assertEqual(t, eb.cursor.y, 11)
+    eb.moveCursorDown()
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 2)
+    assertEqual(t, eb.cursor.y, 12)
+}
+
+func TestMoveDownOneLine(t *testing.T) {
+    eb := NewEditbox(3, 3, Options{wrap:true})
+    eb.editor.setText(`11122233`)
+    eb.editor.cursor.x = 0
+    eb.editor.cursor.y = 0
+    eb.editor.moveCursorRight();
+    eb.editor.moveCursorRight();
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 2)
+    assertEqual(t, eb.cursor.y, 0)
+    eb.moveCursorDown()
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 2)
+    assertEqual(t, eb.cursor.y, 1)
+    eb.moveCursorDown()
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 2)
+    assertEqual(t, eb.cursor.y, 2)
+}
+
+func TestMoveUp(t *testing.T) {
+    eb := NewEditbox(3, 3, Options{wrap:true})
+    eb.editor.setText(`11122233
+4445
+6667778
+
+0
+11122233
+44`)
+    eb.editor.cursor.x = 0
+    eb.editor.cursor.y = 6
+    eb.editor.moveCursorRight();
+    eb.editor.moveCursorRight();
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 2)
+    assertEqual(t, eb.cursor.y, 13)
+    eb.moveCursorUp()
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 2)
+    assertEqual(t, eb.cursor.y, 12)
+    eb.moveCursorUp()
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 2)
+    assertEqual(t, eb.cursor.y, 11)
+    eb.moveCursorUp()
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 2)
+    assertEqual(t, eb.cursor.y, 10)
+    eb.moveCursorUp()
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 1)
+    assertEqual(t, eb.cursor.y, 9)
+    eb.moveCursorUp()
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 0)
+    assertEqual(t, eb.cursor.y, 8)
+    eb.moveCursorUp()
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 1)
+    assertEqual(t, eb.cursor.y, 7)
+    eb.moveCursorUp()
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 2)
+    assertEqual(t, eb.cursor.y, 6)
+    eb.moveCursorUp()
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 2)
+    assertEqual(t, eb.cursor.y, 5)
+    eb.moveCursorUp()
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 1)
+    assertEqual(t, eb.cursor.y, 4)
+    eb.moveCursorUp()
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 2)
+    assertEqual(t, eb.cursor.y, 3)
+    eb.moveCursorUp()
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 2)
+    assertEqual(t, eb.cursor.y, 2)
+    eb.moveCursorUp()
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 2)
+    assertEqual(t, eb.cursor.y, 1)
+    eb.moveCursorUp()
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 2)
+    assertEqual(t, eb.cursor.y, 0)
+    eb.moveCursorUp()
+    eb.updateLineOffsets()
+    assertEqual(t, eb.cursor.x, 2)
+    assertEqual(t, eb.cursor.y, 0)
+}
+

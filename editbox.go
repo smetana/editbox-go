@@ -68,6 +68,14 @@ func (l *Line) lastRune() rune {
     return l.text[len(l.text) - 1]
 }
 
+func (l *Line) lastRuneX() int {
+    if l.lastRune() == '\n' {
+        return (len(l.text) - 1)
+    } else {
+        return (len(l.text))
+    }
+}
+
 //----------------------------------------------------------------------------
 // Editor
 //----------------------------------------------------------------------------
@@ -279,6 +287,78 @@ func (ebox *Editbox) editorToBox(x, y int) (int, int) {
     return x, y
 }
 
+// Cursor movement in wrap mode is a bit tricky
+func (ebox *Editbox) moveCursorDown() {
+    if ebox.wrap {
+        ed := ebox.editor
+        line := ed.currentLine()
+        // Try to move within current line
+        if ed.cursor.x + ebox.width < len(line.text) {
+            ed.cursor.x += ebox.width
+            return
+        }
+        if ebox.cursor.x + (len(line.text) - ed.cursor.x) - 1 >= ebox.width {
+            ed.cursor.x = line.lastRuneX()
+            return
+        }
+        // Jump to next line
+        if ed.cursor.y + 1 > len(ed.lines) - 1 {
+            return
+        }
+        ed.cursor.y += 1
+        line = ed.currentLine()
+        if len(line.text) == 0 {
+            ed.cursor.x = 0
+            return
+        }
+        x, _ := ebox.editorToBox(ed.lastx, 0)
+        if x >= len(line.text) {
+            ed.cursor.x = line.lastRuneX()
+        } else {
+            ed.cursor.x = x
+        }
+    } else {
+        ebox.editor.moveCursorVert(+1)
+    }
+}
+
+func (ebox *Editbox) moveCursorUp() {
+    if ebox.wrap {
+        ed := ebox.editor
+        lastx, _ := ebox.editorToBox(ed.lastx, 0)
+        x, _ := ebox.editorToBox(ed.cursor.x, 0)
+        if x == lastx && ed.cursor.x - ebox.width >= 0 {
+            ed.cursor.x -= ebox.width
+            return
+        }
+        d := ebox.width + x - lastx
+        if x < lastx && ed.cursor.x - d >= 0 {
+            ed.cursor.x -= d
+            return
+        }
+        if ed.cursor.y - 1 < 0 {
+            return
+        }
+        ed.cursor.y -= 1
+        line := ed.currentLine()
+        if ed.lastx < ebox.width {
+            ed.cursor.x = ed.lastx
+        }
+        if lastx >= line.lastRuneX() {
+            ed.cursor.x = line.lastRuneX()
+            return
+        }
+        x, _ = ebox.editorToBox(line.lastRuneX(), 0)
+        if x <= lastx {
+            ed.cursor.x = line.lastRuneX()
+        } else {
+            ed.cursor.x = line.lastRuneX() - x + lastx
+        }
+    } else {
+        ebox.editor.moveCursorVert(-1)
+    }
+}
+
 func (ebox *Editbox) scrollToCursor() {
     if ebox.cursor.y - ebox.scroll > ebox.height - 1 {
         ebox.scroll = ebox.cursor.y - ebox.height + 1
@@ -350,9 +430,9 @@ func (ebox *Editbox) handleEvent(ev *termbox.Event) bool {
         case termbox.KeyArrowRight:
              ed.moveCursorRight()
         case termbox.KeyArrowUp:
-             ed.moveCursorVert(-1)
+             ebox.moveCursorUp()
         case termbox.KeyArrowDown:
-             ed.moveCursorVert(+1)
+             ebox.moveCursorDown()
         case termbox.KeyHome:
              ed.moveCursorToLineStart()
         case termbox.KeyEnd:
@@ -410,7 +490,7 @@ func main() {
 	defer termbox.Close()
 	termbox.SetInputMode(termbox.InputEsc)
     termbox.SetOutputMode(termbox.Output256)
-    ebox := NewEditbox(20, 10, Options{
+    ebox := NewEditbox(3, 10, Options{
         wrap: true,
         autoexpand: false,
         fg: 12,
