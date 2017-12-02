@@ -247,7 +247,7 @@ type Editbox struct {
 	lineBoxY      []int
 	visibleHeight int
 	virtualHeight int
-	scroll        int
+	scroll        Cursor
 	// Needed to calculate cursor movement direction for scrolling
 	prevCursor Cursor
 }
@@ -261,7 +261,6 @@ func NewEditbox(width, height int, options Options) *Editbox {
 	ebox.editor = NewEditor()
 	ebox.wrap = options.wrap
 	ebox.autoexpand = options.autoexpand
-	ebox.scroll = 0
 	return &ebox
 }
 
@@ -375,10 +374,10 @@ func (ebox *Editbox) moveCursorUp() {
 }
 
 func (ebox *Editbox) scrollToCursor() {
-	if ebox.cursor.y-ebox.scroll > ebox.height-1 {
-		ebox.scroll = ebox.cursor.y - ebox.height + 1
-	} else if ebox.cursor.y-ebox.scroll < 0 {
-		ebox.scroll = ebox.cursor.y
+	if ebox.cursor.y-ebox.scroll.y > ebox.height-1 {
+		ebox.scroll.y = ebox.cursor.y - ebox.height + 1
+	} else if ebox.cursor.y-ebox.scroll.y < 0 {
+		ebox.scroll.y = ebox.cursor.y
 	}
 }
 
@@ -405,11 +404,11 @@ func (ebox *Editbox) Draw() {
 		for x, r := range line.text {
 			boxX, boxY = ebox.editorToBox(x, y)
 			//TODO Optimize
-			if boxY < ebox.scroll {
+			if boxY < ebox.scroll.y {
 				continue
 			}
 			viewX = boxX
-			viewY = boxY - ebox.scroll
+			viewY = boxY - ebox.scroll.y
 			if viewY > ebox.height-1 && !ebox.autoexpand {
 				break
 			}
@@ -421,25 +420,25 @@ func (ebox *Editbox) Draw() {
 		}
 	}
 	ebox.indicateScrolling()
-	termbox.SetCursor(ebox.cursor.x, ebox.cursor.y-ebox.scroll)
+	termbox.SetCursor(ebox.cursor.x, ebox.cursor.y-ebox.scroll.y)
 	termbox.Flush()
 }
 
 // TODO Better solution
 func (ebox *Editbox) indicateScrolling() {
-	if ebox.scroll > 0 {
-		if ebox.cursor.x != 0 || ebox.cursor.y > ebox.scroll {
+	if ebox.scroll.y > 0 {
+		if ebox.cursor.x != 0 || ebox.cursor.y > ebox.scroll.y {
 			termbox.SetCell(0, 0, '↑', ebox.fg, ebox.bg)
 		}
-		if (ebox.cursor.x != ebox.width - 1) || ebox.cursor.y > ebox.scroll {
+		if (ebox.cursor.x != ebox.width - 1) || ebox.cursor.y > ebox.scroll.y {
 			termbox.SetCell(ebox.width - 1, 0, '↑', ebox.fg, ebox.bg)
 		}
 	}
-	if ebox.virtualHeight > ebox.visibleHeight + ebox.scroll {
-		if ebox.cursor.x != 0 || ebox.cursor.y < ebox.scroll + ebox.visibleHeight {
+	if ebox.virtualHeight > ebox.visibleHeight + ebox.scroll.y {
+		if ebox.cursor.x != 0 || ebox.cursor.y < ebox.scroll.y + ebox.visibleHeight {
 			termbox.SetCell(0, ebox.height - 1, '↓', ebox.fg, ebox.bg)
 		}
-		if (ebox.cursor.x != ebox.width - 1) || ebox.cursor.y < ebox.scroll + ebox.visibleHeight {
+		if (ebox.cursor.x != ebox.width - 1) || ebox.cursor.y < ebox.scroll.y + ebox.visibleHeight {
 			termbox.SetCell(ebox.width - 1, ebox.height - 1, '↓', ebox.fg, ebox.bg)
 		}
 	}
