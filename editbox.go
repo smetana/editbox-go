@@ -292,6 +292,7 @@ func (ebox *Editbox) editorToBox(x, y int) (int, int) {
 }
 
 // Cursor movement in wrap mode is a bit tricky
+// TODO Code smell. Refactor
 func (ebox *Editbox) moveCursorDown() {
 	if ebox.wrap {
 		ed := ebox.editor
