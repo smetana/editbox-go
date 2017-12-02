@@ -245,6 +245,7 @@ type Editbox struct {
 	fg, bg        termbox.Attribute
 	// Line y coord in box in wrap mode
 	lineBoxY      []int
+	visibleHeight int
 	virtualHeight int
 	scroll        int
 	// Needed to calculate cursor movement direction for scrolling
@@ -278,6 +279,15 @@ func (ebox *Editbox) updateLineOffsets() {
 		}
 	}
 	ebox.virtualHeight = ebox.lineBoxY[linesCnt-1] + dy + 1
+	if ebox.autoexpand {
+		if ebox.virtualHeight > ebox.height {
+			ebox.visibleHeight = ebox.virtualHeight
+		} else {
+			ebox.visibleHeight = ebox.height
+		}
+	} else {
+		ebox.visibleHeight = ebox.height
+	}
 	ebox.prevCursor = ebox.cursor
 	ebox.cursor.x, ebox.cursor.y = ebox.editorToBox(ed.cursor.x, ed.cursor.y)
 }
@@ -384,19 +394,9 @@ func (ebox *Editbox) Draw() {
 		x, y          int
 		boxX, boxY    int
 		viewX, viewY  int
-		visibleHeight int
 	)
-	if ebox.autoexpand {
-		if ebox.virtualHeight > ebox.height {
-			visibleHeight = ebox.virtualHeight
-		} else {
-			visibleHeight = ebox.height
-		}
-	} else {
-		visibleHeight = ebox.height
-	}
 	// Fill background. TODO Optimize with next for
-	for y = 0; y < visibleHeight; y++ {
+	for y = 0; y < ebox.visibleHeight; y++ {
 		for x = 0; x < ebox.width; x++ {
 			termbox.SetCell(x, y, ' ', ebox.fg, ebox.bg)
 		}
@@ -420,8 +420,29 @@ func (ebox *Editbox) Draw() {
 			termbox.SetCell(viewX, viewY, r, ebox.fg, ebox.bg)
 		}
 	}
+	ebox.indicateScrolling()
 	termbox.SetCursor(ebox.cursor.x, ebox.cursor.y-ebox.scroll)
 	termbox.Flush()
+}
+
+// TODO Better solution
+func (ebox *Editbox) indicateScrolling() {
+	if ebox.scroll > 0 {
+		if ebox.cursor.x != 0 || ebox.cursor.y > ebox.scroll {
+			termbox.SetCell(0, 0, '↑', ebox.fg, ebox.bg)
+		}
+		if (ebox.cursor.x != ebox.width - 1) || ebox.cursor.y > ebox.scroll {
+			termbox.SetCell(ebox.width - 1, 0, '↑', ebox.fg, ebox.bg)
+		}
+	}
+	if ebox.virtualHeight > ebox.visibleHeight + ebox.scroll {
+		if ebox.cursor.x != 0 || ebox.cursor.y < ebox.scroll + ebox.visibleHeight {
+			termbox.SetCell(0, ebox.height - 1, '↓', ebox.fg, ebox.bg)
+		}
+		if (ebox.cursor.x != ebox.width - 1) || ebox.cursor.y < ebox.scroll + ebox.visibleHeight {
+			termbox.SetCell(ebox.width - 1, ebox.height - 1, '↓', ebox.fg, ebox.bg)
+		}
+	}
 }
 
 func (ebox *Editbox) handleEvent(ev *termbox.Event) bool {
@@ -496,7 +517,7 @@ func main() {
 	defer termbox.Close()
 	termbox.SetInputMode(termbox.InputEsc)
 	termbox.SetOutputMode(termbox.Output256)
-	ebox := NewEditbox(3, 10, Options{
+	ebox := NewEditbox(10, 10, Options{
 		wrap:       true,
 		autoexpand: false,
 		fg:         12,
