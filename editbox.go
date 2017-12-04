@@ -374,18 +374,25 @@ func (ebox *Editbox) moveCursorUp() {
 }
 
 func (ebox *Editbox) scrollToCursor() {
-	if ebox.cursor.y-ebox.scroll.y > ebox.height-1 {
-		ebox.scroll.y = ebox.cursor.y - ebox.height + 1
-	} else if ebox.cursor.y-ebox.scroll.y < 0 {
-		ebox.scroll.y = ebox.cursor.y
+	if !ebox.wrap {
+		if ebox.cursor.x - ebox.scroll.x > ebox.width - 1 {
+			ebox.scroll.x = ebox.cursor.x - ebox.width + 1
+		} else if ebox.cursor.x - ebox.scroll.x < 0 {
+			ebox.scroll.x = ebox.cursor.x
+		}
+	}
+	if !ebox.autoexpand {
+		if ebox.cursor.y-ebox.scroll.y > ebox.height-1 {
+			ebox.scroll.y = ebox.cursor.y - ebox.height + 1
+		} else if ebox.cursor.y-ebox.scroll.y < 0 {
+			ebox.scroll.y = ebox.cursor.y
+		}
 	}
 }
 
 func (ebox *Editbox) Draw() {
 	ebox.updateLineOffsets()
-	if !ebox.autoexpand {
-		ebox.scrollToCursor()
-	}
+	ebox.scrollToCursor()
 	ed := ebox.editor
 	coldef := termbox.ColorDefault
 	termbox.Clear(coldef, coldef)
@@ -404,11 +411,14 @@ func (ebox *Editbox) Draw() {
 		for x, r := range line.text {
 			boxX, boxY = ebox.editorToBox(x, y)
 			//TODO Optimize
-			if boxY < ebox.scroll.y {
+			if boxY < ebox.scroll.y || boxX < ebox.scroll.x {
 				continue
 			}
-			viewX = boxX
+			viewX = boxX - ebox.scroll.x
 			viewY = boxY - ebox.scroll.y
+			if viewX > ebox.width - 1 {
+				break
+			}
 			if viewY > ebox.height-1 && !ebox.autoexpand {
 				break
 			}
@@ -418,9 +428,12 @@ func (ebox *Editbox) Draw() {
 			}
 			termbox.SetCell(viewX, viewY, r, ebox.fg, ebox.bg)
 		}
+		if viewY > ebox.height-1 && !ebox.autoexpand {
+			break
+		}
 	}
 	ebox.indicateScrolling()
-	termbox.SetCursor(ebox.cursor.x, ebox.cursor.y-ebox.scroll.y)
+	termbox.SetCursor(ebox.cursor.x - ebox.scroll.x, ebox.cursor.y - ebox.scroll.y)
 	termbox.Flush()
 }
 
@@ -516,8 +529,8 @@ func main() {
 	defer termbox.Close()
 	termbox.SetInputMode(termbox.InputEsc)
 	termbox.SetOutputMode(termbox.Output256)
-	ebox := NewEditbox(10, 10, Options{
-		wrap:       true,
+	ebox := NewEditbox(20, 10, Options{
+		wrap:       false,
 		autoexpand: false,
 		fg:         12,
 		bg:         63})
