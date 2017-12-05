@@ -234,6 +234,8 @@ type Options struct {
 	bg         termbox.Attribute
 	wrap       bool
 	autoexpand bool
+	minHeight  int
+	maxHeight  int
 }
 
 type Editbox struct {
@@ -247,6 +249,7 @@ type Editbox struct {
 	lineBoxY      []int
 	visibleHeight int
 	virtualHeight int
+	minHeight, maxHeight int
 	scroll        Cursor
 }
 
@@ -259,6 +262,14 @@ func NewEditbox(width, height int, options Options) *Editbox {
 	ebox.editor = NewEditor()
 	ebox.wrap = options.wrap
 	ebox.autoexpand = options.autoexpand
+	if ebox.autoexpand {
+		ebox.minHeight = height
+		if options.maxHeight <= 0 {
+			ebox.maxHeight = ebox.minHeight
+		} else {
+			ebox.maxHeight = options.maxHeight
+		}
+	}
 	return &ebox
 }
 
@@ -277,9 +288,22 @@ func (ebox *Editbox) updateLineOffsets() {
 	}
 	ebox.virtualHeight = ebox.lineBoxY[linesCnt-1] + dy + 1
 	if ebox.autoexpand {
-		if ebox.virtualHeight > ebox.height {
-			ebox.visibleHeight = ebox.virtualHeight
-		} else {
+		switch {
+		case ebox.virtualHeight > ebox.height:
+			if ebox.virtualHeight > ebox.maxHeight {
+				ebox.visibleHeight = ebox.maxHeight
+			} else {
+				ebox.visibleHeight = ebox.virtualHeight
+			}
+			ebox.height = ebox.visibleHeight
+		case ebox.virtualHeight < ebox.height:
+			if ebox.virtualHeight < ebox.minHeight {
+				ebox.visibleHeight = ebox.minHeight
+			} else {
+				ebox.visibleHeight = ebox.virtualHeight
+			}
+			ebox.height = ebox.visibleHeight
+		default:
 			ebox.visibleHeight = ebox.height
 		}
 	} else {
@@ -390,12 +414,14 @@ func (ebox *Editbox) scrollToCursor() {
 			ebox.scroll.x = ebox.cursor.x
 		}
 	}
-	if !ebox.autoexpand {
+	if ebox.virtualHeight > ebox.height {
 		if ebox.cursor.y-ebox.scroll.y > ebox.height-1 {
 			ebox.scroll.y = ebox.cursor.y - ebox.height + 1
 		} else if ebox.cursor.y-ebox.scroll.y < 0 {
 			ebox.scroll.y = ebox.cursor.y
 		}
+	} else {
+		ebox.scroll.y = 0
 	}
 }
 
@@ -428,7 +454,7 @@ func (ebox *Editbox) Draw() {
 			if viewX > ebox.width - 1 {
 				break
 			}
-			if viewY > ebox.height-1 && !ebox.autoexpand {
+			if viewY > ebox.height-1 {
 				break
 			}
 			// TODO Remove debug ???
@@ -437,7 +463,7 @@ func (ebox *Editbox) Draw() {
 			}
 			termbox.SetCell(viewX, viewY, r, ebox.fg, ebox.bg)
 		}
-		if viewY > ebox.height-1 && !ebox.autoexpand {
+		if viewY > ebox.height-1 {
 			break
 		}
 	}
@@ -542,9 +568,10 @@ func main() {
 	defer termbox.Close()
 	termbox.SetInputMode(termbox.InputEsc)
 	termbox.SetOutputMode(termbox.Output256)
-	ebox := NewEditbox(20, 10, Options{
-		wrap:       false,
-		autoexpand: false,
+	ebox := NewEditbox(20, 3, Options{
+		wrap:       true,
+		autoexpand: true,
+		maxHeight:  6,
 		fg:         12,
 		bg:         63})
 	ebox.Draw()
