@@ -373,6 +373,18 @@ func (ebox *Editbox) moveCursorUp() {
 	}
 }
 
+func (ebox *Editbox) moveCursorPageUp() {
+	for i:=1; i <= ebox.height; i++ {
+		ebox.moveCursorUp()
+	}
+}
+
+func (ebox *Editbox) moveCursorPageDown() {
+	for i:=1; i <= ebox.height; i++ {
+		ebox.moveCursorDown()
+	}
+}
+
 func (ebox *Editbox) scrollToCursor() {
 	if !ebox.wrap {
 		if ebox.cursor.x - ebox.scroll.x > ebox.width - 1 {
@@ -477,6 +489,10 @@ func (ebox *Editbox) handleEvent(ev *termbox.Event) bool {
 			ed.moveCursorToLineStart()
 		case termbox.KeyEnd:
 			ed.moveCursorToLineEnd()
+		case termbox.KeyPgup:
+			ebox.moveCursorPageUp()
+		case termbox.KeyPgdn:
+			ebox.moveCursorPageDown()
 		case termbox.KeyBackspace, termbox.KeyBackspace2:
 			ed.deleteRuneBeforeCursor()
 		case termbox.KeyDelete:
