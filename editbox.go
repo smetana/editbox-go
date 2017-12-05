@@ -248,8 +248,6 @@ type Editbox struct {
 	visibleHeight int
 	virtualHeight int
 	scroll        Cursor
-	// Needed to calculate cursor movement direction for scrolling
-	prevCursor Cursor
 }
 
 func NewEditbox(width, height int, options Options) *Editbox {
@@ -287,7 +285,6 @@ func (ebox *Editbox) updateLineOffsets() {
 	} else {
 		ebox.visibleHeight = ebox.height
 	}
-	ebox.prevCursor = ebox.cursor
 	ebox.cursor.x, ebox.cursor.y = ebox.editorToBox(ed.cursor.x, ed.cursor.y)
 }
 
