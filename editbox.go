@@ -419,7 +419,7 @@ func (ebox *Editbox) scrollToCursor() {
 			ebox.scroll.y = ebox.cursor.y - ebox.height + 1
 		} else if ebox.cursor.y-ebox.scroll.y < 0 {
 			ebox.scroll.y = ebox.cursor.y
-		} else if ebox.virtualHeight - ebox.scroll.y < ebox.height - 1 {
+		} else if ebox.virtualHeight - ebox.scroll.y <= ebox.height - 1 {
 			ebox.scroll.y = ebox.virtualHeight - ebox.height
 		}
 	} else {
