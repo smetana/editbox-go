@@ -234,7 +234,6 @@ type Options struct {
 	bg         termbox.Attribute
 	wrap       bool
 	autoexpand bool
-	minHeight  int
 	maxHeight  int
 }
 
