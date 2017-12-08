@@ -235,6 +235,7 @@ type Options struct {
 	wrap       bool
 	autoexpand bool
 	maxHeight  int
+	printNL    bool
 }
 
 type Editbox struct {
@@ -245,6 +246,7 @@ type Editbox struct {
 	wrap          bool
 	autoexpand    bool
 	fg, bg        termbox.Attribute
+	printNL       bool
 	// Line y coord in box in wrap mode
 	lineBoxY      []int
 	visibleHeight int
@@ -272,6 +274,7 @@ func NewEditbox(x, y, width, height int, options Options) *Editbox {
 			ebox.maxHeight = options.maxHeight
 		}
 	}
+	ebox.printNL = options.printNL
 	return &ebox
 }
 
@@ -461,9 +464,12 @@ func (ebox *Editbox) Draw() {
 			if viewY > ebox.height-1 {
 				break
 			}
-			// TODO Remove debug ???
 			if r == '\n' {
-				r = '␤'
+				if ebox.printNL {
+					r = '␤'
+				} else {
+					r = ' '
+				}
 			}
 			termbox.SetCell(ebox.x+viewX, ebox.y+viewY, r, ebox.fg, ebox.bg)
 		}
