@@ -240,6 +240,7 @@ type Options struct {
 type Editbox struct {
 	editor        *Editor
 	cursor        Cursor
+	x, y          int
 	width, height int
 	wrap          bool
 	autoexpand    bool
@@ -252,8 +253,10 @@ type Editbox struct {
 	scroll        Cursor
 }
 
-func NewEditbox(width, height int, options Options) *Editbox {
+func NewEditbox(x, y, width, height int, options Options) *Editbox {
 	var ebox Editbox
+	ebox.x = x
+	ebox.y = y
 	ebox.width = width
 	ebox.height = height
 	ebox.fg = options.fg
@@ -440,7 +443,7 @@ func (ebox *Editbox) Draw() {
 	// Fill background. TODO Optimize with next for
 	for y = 0; y < ebox.visibleHeight; y++ {
 		for x = 0; x < ebox.width; x++ {
-			termbox.SetCell(x, y, ' ', ebox.fg, ebox.bg)
+			termbox.SetCell(ebox.x+x, ebox.y+y, ' ', ebox.fg, ebox.bg)
 		}
 	}
 	for y, line := range ed.lines {
@@ -462,13 +465,14 @@ func (ebox *Editbox) Draw() {
 			if r == '\n' {
 				r = '␤'
 			}
-			termbox.SetCell(viewX, viewY, r, ebox.fg, ebox.bg)
+			termbox.SetCell(ebox.x+viewX, ebox.y+viewY, r, ebox.fg, ebox.bg)
 		}
 		if viewY > ebox.height-1 {
 			break
 		}
 	}
-	termbox.SetCursor(ebox.cursor.x - ebox.scroll.x, ebox.cursor.y - ebox.scroll.y)
+	termbox.SetCursor(ebox.x+ebox.cursor.x-ebox.scroll.x,
+		ebox.y+ebox.cursor.y-ebox.scroll.y)
 	termbox.Flush()
 }
 
@@ -548,7 +552,7 @@ func main() {
 	defer termbox.Close()
 	termbox.SetInputMode(termbox.InputEsc)
 	termbox.SetOutputMode(termbox.Output256)
-	ebox := NewEditbox(20, 3, Options{
+	ebox := NewEditbox(12, 10, 20, 3, Options{
 		wrap:       true,
 		autoexpand: true,
 		maxHeight:  6,
