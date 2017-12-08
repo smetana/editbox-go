@@ -251,7 +251,8 @@ type Editbox struct {
 	lineBoxY      []int
 	visibleHeight int
 	virtualHeight int
-	minHeight, maxHeight int
+	minHeight     int
+	maxHeight     int
 	scroll        Cursor
 }
 
@@ -400,22 +401,22 @@ func (ebox *Editbox) moveCursorUp() {
 }
 
 func (ebox *Editbox) moveCursorPageUp() {
-	for i:=1; i <= ebox.height; i++ {
+	for i := 1; i <= ebox.height; i++ {
 		ebox.moveCursorUp()
 	}
 }
 
 func (ebox *Editbox) moveCursorPageDown() {
-	for i:=1; i <= ebox.height; i++ {
+	for i := 1; i <= ebox.height; i++ {
 		ebox.moveCursorDown()
 	}
 }
 
 func (ebox *Editbox) scrollToCursor() {
 	if !ebox.wrap {
-		if ebox.cursor.x - ebox.scroll.x > ebox.width - 1 {
+		if ebox.cursor.x-ebox.scroll.x > ebox.width-1 {
 			ebox.scroll.x = ebox.cursor.x - ebox.width + 1
-		} else if ebox.cursor.x - ebox.scroll.x < 0 {
+		} else if ebox.cursor.x-ebox.scroll.x < 0 {
 			ebox.scroll.x = ebox.cursor.x
 		}
 	}
@@ -424,7 +425,7 @@ func (ebox *Editbox) scrollToCursor() {
 			ebox.scroll.y = ebox.cursor.y - ebox.height + 1
 		} else if ebox.cursor.y-ebox.scroll.y < 0 {
 			ebox.scroll.y = ebox.cursor.y
-		} else if ebox.virtualHeight - ebox.scroll.y <= ebox.height - 1 {
+		} else if ebox.virtualHeight-ebox.scroll.y <= ebox.height-1 {
 			ebox.scroll.y = ebox.virtualHeight - ebox.height
 		}
 	} else {
@@ -439,9 +440,9 @@ func (ebox *Editbox) Draw() {
 	coldef := termbox.ColorDefault
 	termbox.Clear(coldef, coldef)
 	var (
-		x, y          int
-		boxX, boxY    int
-		viewX, viewY  int
+		x, y         int
+		boxX, boxY   int
+		viewX, viewY int
 	)
 	// Fill background. TODO Optimize with next for
 	for y = 0; y < ebox.visibleHeight; y++ {
@@ -458,7 +459,7 @@ func (ebox *Editbox) Draw() {
 			}
 			viewX = boxX - ebox.scroll.x
 			viewY = boxY - ebox.scroll.y
-			if viewX > ebox.width - 1 {
+			if viewX > ebox.width-1 {
 				break
 			}
 			if viewY > ebox.height-1 {
