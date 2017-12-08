@@ -468,29 +468,8 @@ func (ebox *Editbox) Draw() {
 			break
 		}
 	}
-	ebox.indicateScrolling()
 	termbox.SetCursor(ebox.cursor.x - ebox.scroll.x, ebox.cursor.y - ebox.scroll.y)
 	termbox.Flush()
-}
-
-// TODO Better solution
-func (ebox *Editbox) indicateScrolling() {
-	if ebox.scroll.y > 0 {
-		if ebox.cursor.x != 0 || ebox.cursor.y > ebox.scroll.y {
-			termbox.SetCell(0, 0, '↑', ebox.fg, ebox.bg)
-		}
-		if (ebox.cursor.x != ebox.width - 1) || ebox.cursor.y > ebox.scroll.y {
-			termbox.SetCell(ebox.width - 1, 0, '↑', ebox.fg, ebox.bg)
-		}
-	}
-	if ebox.virtualHeight > ebox.visibleHeight + ebox.scroll.y {
-		if ebox.cursor.x != 0 || ebox.cursor.y < ebox.scroll.y + ebox.visibleHeight {
-			termbox.SetCell(0, ebox.height - 1, '↓', ebox.fg, ebox.bg)
-		}
-		if (ebox.cursor.x != ebox.width - 1) || ebox.cursor.y < ebox.scroll.y + ebox.visibleHeight {
-			termbox.SetCell(ebox.width - 1, ebox.height - 1, '↓', ebox.fg, ebox.bg)
-		}
-	}
 }
 
 func (ebox *Editbox) handleEvent(ev *termbox.Event) bool {
