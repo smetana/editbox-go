@@ -240,6 +240,7 @@ type Options struct {
 
 type Editbox struct {
 	editor        *Editor
+	view          [][]rune
 	cursor        Cursor
 	x, y          int
 	width, height int
@@ -433,22 +434,17 @@ func (ebox *Editbox) scrollToCursor() {
 	}
 }
 
-func (ebox *Editbox) Draw() {
+func (ebox *Editbox) renderView() {
 	ebox.updateLineOffsets()
 	ebox.scrollToCursor()
 	ed := ebox.editor
-	coldef := termbox.ColorDefault
-	termbox.Clear(coldef, coldef)
 	var (
-		x, y         int
 		boxX, boxY   int
 		viewX, viewY int
 	)
-	// Fill background. TODO Optimize with next for
-	for y = 0; y < ebox.visibleHeight; y++ {
-		for x = 0; x < ebox.width; x++ {
-			termbox.SetCell(ebox.x+x, ebox.y+y, ' ', ebox.fg, ebox.bg)
-		}
+	ebox.view = make([][]rune, ebox.height)
+	for i := range ebox.view {
+		ebox.view[i] = make([]rune, ebox.width)
 	}
 	for y, line := range ed.lines {
 		for x, r := range line.text {
@@ -472,10 +468,25 @@ func (ebox *Editbox) Draw() {
 					r = ' '
 				}
 			}
-			termbox.SetCell(ebox.x+viewX, ebox.y+viewY, r, ebox.fg, ebox.bg)
+			ebox.view[viewY][viewX] = r
 		}
 		if viewY > ebox.height-1 {
 			break
+		}
+	}
+}
+
+func (ebox *Editbox) Draw() {
+	ebox.renderView()
+	var r rune
+	for y := 0; y < ebox.height; y++ {
+		for x := 0; x < ebox.width; x++ {
+			if ebox.view[y][x] != 0 {
+				r = ebox.view[y][x]
+			} else {
+				r = ' ' // Fill empty cells with background color
+			}
+			termbox.SetCell(ebox.x+x, ebox.y+y, r, ebox.fg, ebox.bg)
 		}
 	}
 	termbox.SetCursor(ebox.x+ebox.cursor.x-ebox.scroll.x,
