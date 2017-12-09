@@ -250,7 +250,6 @@ type Editbox struct {
 	printNL       bool
 	// Line y coord in box in wrap mode
 	lineBoxY      []int
-	visibleHeight int
 	virtualHeight int
 	minHeight     int
 	maxHeight     int
@@ -295,27 +294,22 @@ func (ebox *Editbox) updateLineOffsets() {
 	}
 	ebox.virtualHeight = ebox.lineBoxY[linesCnt-1] + dy + 1
 	if ebox.autoexpand {
-		switch {
-		case ebox.virtualHeight > ebox.height:
+		if ebox.virtualHeight > ebox.height {
 			if ebox.virtualHeight > ebox.maxHeight {
-				ebox.visibleHeight = ebox.maxHeight
+				ebox.height = ebox.maxHeight
 			} else {
-				ebox.visibleHeight = ebox.virtualHeight
+				ebox.height = ebox.virtualHeight
 			}
-			ebox.height = ebox.visibleHeight
-		case ebox.virtualHeight < ebox.height:
+		} else if ebox.virtualHeight < ebox.height {
 			if ebox.virtualHeight < ebox.minHeight {
-				ebox.visibleHeight = ebox.minHeight
+				ebox.height = ebox.minHeight
 			} else {
-				ebox.visibleHeight = ebox.virtualHeight
+				ebox.height = ebox.virtualHeight
 			}
-			ebox.height = ebox.visibleHeight
-		default:
-			ebox.visibleHeight = ebox.height
 		}
-	} else {
-		ebox.visibleHeight = ebox.height
+		// else Ok. Don't change height
 	}
+	// else Ok. don't change height
 	ebox.cursor.x, ebox.cursor.y = ebox.editorToBox(ed.cursor.x, ed.cursor.y)
 }
 
@@ -558,6 +552,7 @@ func mainLoop(ebox *Editbox) {
 				return
 			}
 			if len(eventQueue) == 0 {
+				termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
 				ebox.Draw()
 			}
 		}
