@@ -22,7 +22,7 @@ export PATH=$PATH:$(go env GOPATH)/bin
 cd ~/projects/editbox
 go get -v -d ./
 
-go run editbox.go
+go run _examples/example.go
 ```
 
 ### Tests

@@ -1,4 +1,4 @@
-package main
+package editbox
 
 import (
 	"bytes"
@@ -230,12 +230,12 @@ func (ed *Editor) moveCursorVert(dy int) {
 //----------------------------------------------------------------------------
 
 type Options struct {
-	fg         termbox.Attribute
-	bg         termbox.Attribute
-	wrap       bool
-	autoexpand bool
-	maxHeight  int
-	printNL    bool
+	Fg         termbox.Attribute
+	Bg         termbox.Attribute
+	Wrap       bool
+	Autoexpand bool
+	MaxHeight  int
+	PrintNL    bool
 }
 
 type Editbox struct {
@@ -262,20 +262,20 @@ func NewEditbox(x, y, width, height int, options Options) *Editbox {
 	ebox.y = y
 	ebox.width = width
 	ebox.height = height
-	ebox.fg = options.fg
-	ebox.bg = options.bg
+	ebox.fg = options.Fg
+	ebox.bg = options.Bg
 	ebox.editor = NewEditor()
-	ebox.wrap = options.wrap
-	ebox.autoexpand = options.autoexpand
+	ebox.wrap = options.Wrap
+	ebox.autoexpand = options.Autoexpand
 	if ebox.autoexpand {
 		ebox.minHeight = height
-		if options.maxHeight <= 0 {
+		if options.MaxHeight <= 0 {
 			ebox.maxHeight = ebox.minHeight
 		} else {
-			ebox.maxHeight = options.maxHeight
+			ebox.maxHeight = options.MaxHeight
 		}
 	}
-	ebox.printNL = options.printNL
+	ebox.printNL = options.PrintNL
 	return &ebox
 }
 
@@ -488,7 +488,7 @@ func (ebox *Editbox) Draw() {
 	termbox.Flush()
 }
 
-func (ebox *Editbox) handleEvent(ev *termbox.Event) bool {
+func (ebox *Editbox) HandleEvent(ev *termbox.Event) bool {
 	ed := ebox.editor
 	switch ev.Type {
 	case termbox.EventKey:
@@ -531,46 +531,4 @@ func (ebox *Editbox) handleEvent(ev *termbox.Event) bool {
 		// TODO
 	}
 	return true
-}
-
-//----------------------------------------------------------------------------
-// main() and support
-//----------------------------------------------------------------------------
-
-func mainLoop(ebox *Editbox) {
-	eventQueue := make(chan termbox.Event, 256)
-	go func() {
-		for {
-			eventQueue <- termbox.PollEvent()
-		}
-	}()
-	for {
-		select {
-		case ev := <-eventQueue:
-			ok := ebox.handleEvent(&ev)
-			if !ok {
-				return
-			}
-			if len(eventQueue) == 0 {
-				termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
-				ebox.Draw()
-			}
-		}
-	}
-}
-
-func main() {
-	err := termbox.Init()
-	check(err)
-	defer termbox.Close()
-	termbox.SetInputMode(termbox.InputEsc)
-	termbox.SetOutputMode(termbox.Output256)
-	ebox := NewEditbox(12, 10, 20, 3, Options{
-		wrap:       true,
-		autoexpand: true,
-		maxHeight:  6,
-		fg:         12,
-		bg:         63})
-	ebox.Draw()
-	mainLoop(ebox)
 }
