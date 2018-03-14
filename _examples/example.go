@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/nsf/termbox-go"
 	".."
+	"github.com/nsf/termbox-go"
 )
 
 func check(e error) {
