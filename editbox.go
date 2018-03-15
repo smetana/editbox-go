@@ -239,7 +239,7 @@ type Options struct {
 }
 
 type Editbox struct {
-	editor        *Editor
+	Editor        *Editor
 	view          [][]rune
 	cursor        Cursor
 	x, y          int
@@ -264,7 +264,7 @@ func NewEditbox(x, y, width, height int, options Options) *Editbox {
 	ebox.height = height
 	ebox.fg = options.Fg
 	ebox.bg = options.Bg
-	ebox.editor = NewEditor()
+	ebox.Editor = NewEditor()
 	ebox.wrap = options.Wrap
 	ebox.autoexpand = options.Autoexpand
 	if ebox.autoexpand {
@@ -280,7 +280,7 @@ func NewEditbox(x, y, width, height int, options Options) *Editbox {
 }
 
 func (ebox *Editbox) updateLineOffsets() {
-	ed := ebox.editor
+	ed := ebox.Editor
 	linesCnt := len(ed.Lines)
 	ebox.lineBoxY = make([]int, linesCnt)
 	dy := 0 // delta between editor y and box Y
@@ -324,26 +324,26 @@ func (ebox *Editbox) editorToBox(x, y int) (int, int) {
 
 
 func (ebox *Editbox) moveCursorLeft() {
-	ebox.editor.moveCursorLeft()
+	ebox.Editor.moveCursorLeft()
 }
 
 func (ebox *Editbox) moveCursorRight() {
-	ebox.editor.moveCursorRight()
+	ebox.Editor.moveCursorRight()
 }
 
 func (ebox *Editbox) moveCursorToLineStart() {
-	ebox.editor.moveCursorToLineStart()
+	ebox.Editor.moveCursorToLineStart()
 }
 
 func (ebox *Editbox) moveCursorToLineEnd() {
-	ebox.editor.moveCursorToLineEnd()
+	ebox.Editor.moveCursorToLineEnd()
 }
 
 // Cursor movement in wrap mode is a bit tricky
 // TODO Code smell. Refactor
 func (ebox *Editbox) moveCursorDown() {
 	if ebox.wrap {
-		ed := ebox.editor
+		ed := ebox.Editor
 		line := ed.CurrentLine()
 		// Try to move within current line
 		if ed.Cursor.X+ebox.width < len(line.Text) {
@@ -371,13 +371,13 @@ func (ebox *Editbox) moveCursorDown() {
 			ed.Cursor.X = x
 		}
 	} else {
-		ebox.editor.moveCursorVert(+1)
+		ebox.Editor.moveCursorVert(+1)
 	}
 }
 
 func (ebox *Editbox) moveCursorUp() {
 	if ebox.wrap {
-		ed := ebox.editor
+		ed := ebox.Editor
 		lastx, _ := ebox.editorToBox(ed.lastx, 0)
 		x, _ := ebox.editorToBox(ed.Cursor.X, 0)
 		if x == lastx && ed.Cursor.X-ebox.width >= 0 {
@@ -408,7 +408,7 @@ func (ebox *Editbox) moveCursorUp() {
 			ed.Cursor.X = line.lastRuneX() - x + lastx
 		}
 	} else {
-		ebox.editor.moveCursorVert(-1)
+		ebox.Editor.moveCursorVert(-1)
 	}
 }
 
@@ -448,7 +448,7 @@ func (ebox *Editbox) scrollToCursor() {
 func (ebox *Editbox) renderView() {
 	ebox.updateLineOffsets()
 	ebox.scrollToCursor()
-	ed := ebox.editor
+	ed := ebox.Editor
 	var (
 		boxX, boxY   int
 		viewX, viewY int
@@ -505,7 +505,7 @@ func (ebox *Editbox) Draw() {
 }
 
 func (ebox *Editbox) HandleEvent(ev *termbox.Event) bool {
-	ed := ebox.editor
+	ed := ebox.Editor
 	switch ev.Type {
 	case termbox.EventKey:
 		switch ev.Key {
