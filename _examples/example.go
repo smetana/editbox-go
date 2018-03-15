@@ -41,12 +41,12 @@ func main() {
 	termbox.SetInputMode(termbox.InputEsc)
 	termbox.SetOutputMode(termbox.Output256)
 	fmt.Println("Editor Test\n\n\n\nEnter text here:")
-	ebox := editbox.NewEditbox(17, 4, 20, 3, editbox.Options{
+	ebox := editbox.NewEditbox(17, 4, 25, 3, editbox.Options{
 		Wrap:       true,
 		Autoexpand: true,
 		MaxHeight:  6,
 		Fg:         12,
-		Bg:         63})
+		Bg:         9})
 	ebox.Draw()
 	termbox.Flush()
 	mainLoop(ebox)
