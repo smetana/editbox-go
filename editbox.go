@@ -225,6 +225,13 @@ func (ed *Editor) moveCursorVert(dy int) {
 	}
 }
 
+// TODO Refactor
+func (ed *Editor) setText(text string) {
+	for _, s := range text {
+		ed.InsertRune(rune(s))
+	}
+}
+
 //----------------------------------------------------------------------------
 // Editbox
 //----------------------------------------------------------------------------
@@ -276,8 +283,11 @@ func NewEditbox(x, y, width, height int, options Options) *Editbox {
 		}
 	}
 	ebox.PrintNL = options.PrintNL
-	ebox.Render()
 	return &ebox
+}
+
+func (ebox *Editbox) Text() string {
+	return ebox.Editor.Text()
 }
 
 func (ebox *Editbox) updateLineOffsets() {
@@ -505,6 +515,21 @@ func (ebox *Editbox) Render() {
 		ebox.Y+ebox.Cursor.Y-ebox.Scroll.Y)
 }
 
+
+//----------------------------------------------------------------------------
+// Widgets
+//----------------------------------------------------------------------------
+
+func NewInputbox(x, y, width int, fg, bg termbox.Attribute) *Editbox {
+	ebox := NewEditbox(x, y, width, 1, Options{
+		Wrap:       false,
+		Autoexpand: false,
+		Fg:         fg,
+		Bg:         bg})
+	ebox.Render()
+	return ebox
+}
+
 func (ebox *Editbox) HandleEvent(ev *termbox.Event) bool {
 	ed := ebox.Editor
 	switch ev.Type {
@@ -547,5 +572,6 @@ func (ebox *Editbox) HandleEvent(ev *termbox.Event) bool {
 	default:
 		// TODO
 	}
+	ebox.Render()
 	return true
 }

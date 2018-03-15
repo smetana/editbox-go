@@ -11,29 +11,29 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	defer termbox.Close()
+
 	fmt.Println("\n  Type here:")
+	input := editbox.NewInputbox(
+		13, 1, 25, termbox.ColorWhite, termbox.ColorBlue)
 
-	ebox := editbox.NewEditbox(13, 1, 25, 3, editbox.Options{
-		Wrap:       true,
-		Autoexpand: true,
-		MaxHeight:  6,
-		Fg:         termbox.ColorWhite,
-		Bg:         termbox.ColorBlue})
-
-	// ebox.Render() only puts its editor's content into termbox
-	// CellBuffer but does not flush it
+	// ebox.Render() only puts its editor's content into
+	// termbox CellBuffer but does not flush it
 	termbox.Flush()
 
-	for {
-		ev := termbox.PollEvent();
+	ok := true
+	for ok {
+		ev := termbox.PollEvent()
 		if ev.Type == termbox.EventKey {
-			ok := ebox.HandleEvent(&ev)
-			if !ok {
-				return // Quit
+			switch ev.Key {
+			case termbox.KeyEsc, termbox.KeyEnter:
+				ok = false
+			default:
+				ok = input.HandleEvent(&ev)
 			}
 		}
-		ebox.Render()
 		termbox.Flush()
 	}
+
+	termbox.Close()
+	fmt.Printf("Text entered: %s\n", input.Text())
 }

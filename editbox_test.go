@@ -104,12 +104,6 @@ func assertEqual(t *testing.T, actual, expected interface{}) {
 	}
 }
 
-func (ed *Editor) setText(text string) {
-	for _, s := range text {
-		ed.InsertRune(rune(s))
-	}
-}
-
 func (ed *Editor) toLines() []string {
 	lines := make([]string, len(ed.Lines))
 	for i, line := range ed.Lines {
