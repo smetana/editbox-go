@@ -276,6 +276,7 @@ func NewEditbox(x, y, width, height int, options Options) *Editbox {
 		}
 	}
 	ebox.PrintNL = options.PrintNL
+	ebox.Render()
 	return &ebox
 }
 
@@ -487,7 +488,7 @@ func (ebox *Editbox) renderView() {
 	}
 }
 
-func (ebox *Editbox) Draw() {
+func (ebox *Editbox) Render() {
 	ebox.renderView()
 	var r rune
 	for y := 0; y < ebox.Height; y++ {
