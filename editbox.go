@@ -485,7 +485,6 @@ func (ebox *Editbox) Draw() {
 	}
 	termbox.SetCursor(ebox.x+ebox.cursor.x-ebox.scroll.x,
 		ebox.y+ebox.cursor.y-ebox.scroll.y)
-	termbox.Flush()
 }
 
 func (ebox *Editbox) HandleEvent(ev *termbox.Event) bool {

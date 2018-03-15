@@ -2,6 +2,7 @@ package main
 
 import (
 	".."
+	"fmt"
 	"github.com/nsf/termbox-go"
 )
 
@@ -26,8 +27,8 @@ func mainLoop(ebox *editbox.Editbox) {
 				return
 			}
 			if len(eventQueue) == 0 {
-				termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
 				ebox.Draw()
+				termbox.Flush()
 			}
 		}
 	}
@@ -39,12 +40,14 @@ func main() {
 	defer termbox.Close()
 	termbox.SetInputMode(termbox.InputEsc)
 	termbox.SetOutputMode(termbox.Output256)
-	ebox := editbox.NewEditbox(12, 10, 20, 3, editbox.Options{
+	fmt.Println("Editor Test\n\n\n\nEnter text here:")
+	ebox := editbox.NewEditbox(17, 4, 20, 3, editbox.Options{
 		Wrap:       true,
 		Autoexpand: true,
 		MaxHeight:  6,
 		Fg:         12,
 		Bg:         63})
 	ebox.Draw()
+	termbox.Flush()
 	mainLoop(ebox)
 }
