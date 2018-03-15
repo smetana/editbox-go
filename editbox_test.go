@@ -113,7 +113,7 @@ func (ed *Editor) setText(text string) {
 func (ed *Editor) toLines() []string {
 	lines := make([]string, len(ed.lines))
 	for i, line := range ed.lines {
-		lines[i] = string(line.text)
+		lines[i] = string(line.Text)
 	}
 	return lines
 }
@@ -124,34 +124,34 @@ func (ed *Editor) toLines() []string {
 
 func TestLineSimpleInsertRune(t *testing.T) {
 	l := new(Line)
-	l.insertRune(0, 'H')
-	l.insertRune(1, 'e')
-	l.insertRune(2, 'l')
-	l.insertRune(3, 'l')
-	l.insertRune(4, 'o')
-	res := string(l.text)
+	l.InsertRune(0, 'H')
+	l.InsertRune(1, 'e')
+	l.InsertRune(2, 'l')
+	l.InsertRune(3, 'l')
+	l.InsertRune(4, 'o')
+	res := string(l.Text)
 	assertEqual(t, res, "Hello")
 }
 
 func TestLineInsertRune(t *testing.T) {
 	l := new(Line)
-	l.text = []rune("Sick")
-	l.insertRune(1, 'l')
-	assertEqual(t, string(l.text), "Slick")
+	l.Text = []rune("Sick")
+	l.InsertRune(1, 'l')
+	assertEqual(t, string(l.Text), "Slick")
 }
 
 func TestLineInsertPostion(t *testing.T) {
 	l := new(Line)
-	l.text = []rune("1")
-	l.insertRune(0, '2')
-	assertEqual(t, string(l.text), "21")
+	l.Text = []rune("1")
+	l.InsertRune(0, '2')
+	assertEqual(t, string(l.Text), "21")
 }
 
 func TestLineInsertCornerCase1(t *testing.T) {
 	l := new(Line)
-	l.text = []rune("1")
-	l.insertRune(1, '2')
-	assertEqual(t, string(l.text), "12")
+	l.Text = []rune("1")
+	l.InsertRune(1, '2')
+	assertEqual(t, string(l.Text), "12")
 }
 
 func TestLineInsertOnWrongPosition(t *testing.T) {
@@ -161,23 +161,23 @@ func TestLineInsertOnWrongPosition(t *testing.T) {
 		}
 	}()
 	l := new(Line)
-	l.text = []rune("1")
-	l.insertRune(2, '2')
+	l.Text = []rune("1")
+	l.InsertRune(2, '2')
 }
 
 func TestLineInsertNewLine(t *testing.T) {
 	l := new(Line)
-	l.text = []rune("HelloWorld")
-	l.insertRune(5, '\n')
-	assertEqual(t, string(l.text), "Hello\nWorld")
+	l.Text = []rune("HelloWorld")
+	l.InsertRune(5, '\n')
+	assertEqual(t, string(l.Text), "Hello\nWorld")
 }
 
 func TestLineSplit(t *testing.T) {
 	l := new(Line)
-	l.text = []rune("Hello World")
-	left, right := l.split(5)
-	assertEqual(t, string(left.text), "Hello")
-	assertEqual(t, string(right.text), " World")
+	l.Text = []rune("Hello World")
+	left, right := l.Split(5)
+	assertEqual(t, string(left.Text), "Hello")
+	assertEqual(t, string(right.Text), " World")
 }
 
 func TestLineSplitOnWrongPosition(t *testing.T) {
@@ -187,8 +187,8 @@ func TestLineSplitOnWrongPosition(t *testing.T) {
 		}
 	}()
 	l := new(Line)
-	l.text = []rune("Sick")
-	_, _ = l.split(10)
+	l.Text = []rune("Sick")
+	_, _ = l.Split(10)
 }
 
 func TestLineDeleteOnWrongPosition(t *testing.T) {
@@ -198,36 +198,36 @@ func TestLineDeleteOnWrongPosition(t *testing.T) {
 		}
 	}()
 	l := new(Line)
-	l.text = []rune("1")
-	l.deleteRune(2)
+	l.Text = []rune("1")
+	l.DeleteRune(2)
 }
 
 func TestLineDelete(t *testing.T) {
 	l := new(Line)
-	l.text = []rune("12")
-	l.deleteRune(1)
-	assertEqual(t, string(l.text), "1")
-	l.text = []rune("12")
-	l.deleteRune(0)
-	assertEqual(t, string(l.text), "2")
-	l.text = []rune("")
-	l.deleteRune(0)
-	assertEqual(t, string(l.text), "")
+	l.Text = []rune("12")
+	l.DeleteRune(1)
+	assertEqual(t, string(l.Text), "1")
+	l.Text = []rune("12")
+	l.DeleteRune(0)
+	assertEqual(t, string(l.Text), "2")
+	l.Text = []rune("")
+	l.DeleteRune(0)
+	assertEqual(t, string(l.Text), "")
 }
 
 func TestLineLastRune(t *testing.T) {
 	l := new(Line)
-	l.text = []rune("12")
+	l.Text = []rune("12")
 	assertEqual(t, l.lastRune(), '2')
-	l.text = []rune("12\n")
+	l.Text = []rune("12\n")
 	assertEqual(t, l.lastRune(), '\n')
 }
 
 func TestLineLastRuneX(t *testing.T) {
 	l := new(Line)
-	l.text = []rune("12")
+	l.Text = []rune("12")
 	assertEqual(t, l.lastRuneX(), 2)
-	l.text = []rune("12\n")
+	l.Text = []rune("12\n")
 	assertEqual(t, l.lastRuneX(), 2)
 }
 
@@ -275,7 +275,7 @@ func TestEditorCurrentLine(t *testing.T) {
 	ed.setText("Hello World!\nSecond Line\nThird Line")
 	ed.cursor.X = 2
 	ed.cursor.Y = 1
-	assertEqual(t, string(ed.currentLine().text), "Second Line\n")
+	assertEqual(t, string(ed.currentLine().Text), "Second Line\n")
 }
 
 func TestEditorSplitLine(t *testing.T) {
