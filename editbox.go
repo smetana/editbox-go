@@ -12,7 +12,7 @@ func check(e error) {
 }
 
 type Cursor struct {
-	x, y int
+	X, Y int
 }
 
 //----------------------------------------------------------------------------
@@ -89,8 +89,8 @@ type Editor struct {
 func NewEditor() *Editor {
 	var ed Editor
 	ed.lines = make([]Line, 1)
-	ed.cursor.x = 0
-	ed.cursor.y = 0
+	ed.cursor.X = 0
+	ed.cursor.Y = 0
 	return &ed
 }
 
@@ -103,7 +103,7 @@ func (ed *Editor) Text() string {
 }
 
 func (ed *Editor) currentLine() *Line {
-	return &ed.lines[ed.cursor.y]
+	return &ed.lines[ed.cursor.Y]
 }
 
 func (ed *Editor) splitLine(x, y int) {
@@ -118,14 +118,14 @@ func (ed *Editor) splitLine(x, y int) {
 func (ed *Editor) insertRune(r rune) {
 	cursor := &ed.cursor
 	line := ed.currentLine()
-	line.insertRune(cursor.x, r)
-	cursor.x += 1
+	line.insertRune(cursor.X, r)
+	cursor.X += 1
 	if r == '\n' {
-		ed.splitLine(cursor.x, cursor.y)
-		cursor.y += 1
-		cursor.x = 0
+		ed.splitLine(cursor.X, cursor.Y)
+		cursor.Y += 1
+		cursor.X = 0
 	}
-	ed.lastx = cursor.x
+	ed.lastx = cursor.X
 }
 
 func (ed *Editor) checkYPosition(y int) {
@@ -136,7 +136,7 @@ func (ed *Editor) checkYPosition(y int) {
 
 func (ed *Editor) deleteRuneBeforeCursor() {
 	cursor := &ed.cursor
-	if cursor.x == 0 && cursor.y == 0 {
+	if cursor.X == 0 && cursor.Y == 0 {
 		return
 	}
 	ed.moveCursorLeft()
@@ -146,15 +146,15 @@ func (ed *Editor) deleteRuneBeforeCursor() {
 func (ed *Editor) deleteRuneAtCursor() {
 	cursor := &ed.cursor
 	line := ed.currentLine()
-	r := line.deleteRune(cursor.x)
-	if r == '\n' && cursor.y < len(ed.lines)-1 {
-		left := &ed.lines[cursor.y]
-		right := &ed.lines[cursor.y+1]
+	r := line.deleteRune(cursor.X)
+	if r == '\n' && cursor.Y < len(ed.lines)-1 {
+		left := &ed.lines[cursor.Y]
+		right := &ed.lines[cursor.Y+1]
 		left.text = append(left.text, right.text...)
-		if cursor.y == len(ed.lines)-2 {
-			ed.lines = ed.lines[:cursor.y+1]
+		if cursor.Y == len(ed.lines)-2 {
+			ed.lines = ed.lines[:cursor.Y+1]
 		} else {
-			copy(ed.lines[cursor.y+1:], ed.lines[cursor.y+2:])
+			copy(ed.lines[cursor.Y+1:], ed.lines[cursor.Y+2:])
 			ed.lines[len(ed.lines)-1] = *(new(Line))
 			ed.lines = ed.lines[:len(ed.lines)-1]
 		}
@@ -164,64 +164,64 @@ func (ed *Editor) deleteRuneAtCursor() {
 func (ed *Editor) moveCursorRight() {
 	cursor := &ed.cursor
 	line := ed.currentLine()
-	cursor.x += 1
-	if cursor.x >= len(line.text) {
-		if cursor.y < len(ed.lines)-1 {
-			cursor.y += 1
-			cursor.x = 0
+	cursor.X += 1
+	if cursor.X >= len(line.text) {
+		if cursor.Y < len(ed.lines)-1 {
+			cursor.Y += 1
+			cursor.X = 0
 		} else {
-			cursor.x = len(line.text)
+			cursor.X = len(line.text)
 		}
 	}
-	ed.lastx = cursor.x
+	ed.lastx = cursor.X
 }
 
 func (ed *Editor) moveCursorLeft() {
 	cursor := &ed.cursor
-	cursor.x -= 1
-	if cursor.x < 0 {
-		if cursor.y > 0 {
-			cursor.y -= 1
+	cursor.X -= 1
+	if cursor.X < 0 {
+		if cursor.Y > 0 {
+			cursor.Y -= 1
 			line := ed.currentLine()
-			cursor.x = len(line.text) - 1
+			cursor.X = len(line.text) - 1
 		} else {
-			cursor.x = 0
+			cursor.X = 0
 		}
 	}
-	ed.lastx = cursor.x
+	ed.lastx = cursor.X
 }
 
 func (ed *Editor) moveCursorToLineStart() {
-	ed.cursor.x, ed.lastx = 0, 0
+	ed.cursor.X, ed.lastx = 0, 0
 }
 
 func (ed *Editor) moveCursorToLineEnd() {
 	line := ed.currentLine()
 	if line.lastRune() == '\n' {
-		ed.cursor.x = len(line.text) - 1
+		ed.cursor.X = len(line.text) - 1
 	} else {
-		ed.cursor.x = len(line.text)
+		ed.cursor.X = len(line.text)
 	}
-	ed.lastx = ed.cursor.x
+	ed.lastx = ed.cursor.X
 }
 
 func (ed *Editor) moveCursorVert(dy int) {
 	cursor := &ed.cursor
-	if cursor.y+dy < 0 {
+	if cursor.Y+dy < 0 {
 		return
 	}
-	if cursor.y+dy > len(ed.lines)-1 {
+	if cursor.Y+dy > len(ed.lines)-1 {
 		return
 	}
-	cursor.y += dy
+	cursor.Y += dy
 	line := ed.currentLine()
 	switch {
 	case len(line.text) == 0:
-		cursor.x = 0
+		cursor.X = 0
 	case ed.lastx >= len(line.text):
-		cursor.x = len(line.text) - 1
+		cursor.X = len(line.text) - 1
 	default:
-		cursor.x = ed.lastx
+		cursor.X = ed.lastx
 	}
 }
 
@@ -310,7 +310,7 @@ func (ebox *Editbox) updateLineOffsets() {
 		// else Ok. Don't change height
 	}
 	// else Ok. don't change height
-	ebox.cursor.x, ebox.cursor.y = ebox.editorToBox(ed.cursor.x, ed.cursor.y)
+	ebox.cursor.X, ebox.cursor.Y = ebox.editorToBox(ed.cursor.X, ed.cursor.Y)
 }
 
 func (ebox *Editbox) editorToBox(x, y int) (int, int) {
@@ -329,29 +329,29 @@ func (ebox *Editbox) moveCursorDown() {
 		ed := ebox.editor
 		line := ed.currentLine()
 		// Try to move within current line
-		if ed.cursor.x+ebox.width < len(line.text) {
-			ed.cursor.x += ebox.width
+		if ed.cursor.X+ebox.width < len(line.text) {
+			ed.cursor.X += ebox.width
 			return
 		}
-		if ebox.cursor.x+(len(line.text)-ed.cursor.x)-1 >= ebox.width {
-			ed.cursor.x = line.lastRuneX()
+		if ebox.cursor.X+(len(line.text)-ed.cursor.X)-1 >= ebox.width {
+			ed.cursor.X = line.lastRuneX()
 			return
 		}
 		// Jump to next line
-		if ed.cursor.y+1 > len(ed.lines)-1 {
+		if ed.cursor.Y+1 > len(ed.lines)-1 {
 			return
 		}
-		ed.cursor.y += 1
+		ed.cursor.Y += 1
 		line = ed.currentLine()
 		if len(line.text) == 0 {
-			ed.cursor.x = 0
+			ed.cursor.X = 0
 			return
 		}
 		x, _ := ebox.editorToBox(ed.lastx, 0)
 		if x >= len(line.text) {
-			ed.cursor.x = line.lastRuneX()
+			ed.cursor.X = line.lastRuneX()
 		} else {
-			ed.cursor.x = x
+			ed.cursor.X = x
 		}
 	} else {
 		ebox.editor.moveCursorVert(+1)
@@ -362,33 +362,33 @@ func (ebox *Editbox) moveCursorUp() {
 	if ebox.wrap {
 		ed := ebox.editor
 		lastx, _ := ebox.editorToBox(ed.lastx, 0)
-		x, _ := ebox.editorToBox(ed.cursor.x, 0)
-		if x == lastx && ed.cursor.x-ebox.width >= 0 {
-			ed.cursor.x -= ebox.width
+		x, _ := ebox.editorToBox(ed.cursor.X, 0)
+		if x == lastx && ed.cursor.X-ebox.width >= 0 {
+			ed.cursor.X -= ebox.width
 			return
 		}
 		d := ebox.width + x - lastx
-		if x < lastx && ed.cursor.x-d >= 0 {
-			ed.cursor.x -= d
+		if x < lastx && ed.cursor.X-d >= 0 {
+			ed.cursor.X -= d
 			return
 		}
-		if ed.cursor.y-1 < 0 {
+		if ed.cursor.Y-1 < 0 {
 			return
 		}
-		ed.cursor.y -= 1
+		ed.cursor.Y -= 1
 		line := ed.currentLine()
 		if ed.lastx < ebox.width {
-			ed.cursor.x = ed.lastx
+			ed.cursor.X = ed.lastx
 		}
 		if lastx >= line.lastRuneX() {
-			ed.cursor.x = line.lastRuneX()
+			ed.cursor.X = line.lastRuneX()
 			return
 		}
 		x, _ = ebox.editorToBox(line.lastRuneX(), 0)
 		if x <= lastx {
-			ed.cursor.x = line.lastRuneX()
+			ed.cursor.X = line.lastRuneX()
 		} else {
-			ed.cursor.x = line.lastRuneX() - x + lastx
+			ed.cursor.X = line.lastRuneX() - x + lastx
 		}
 	} else {
 		ebox.editor.moveCursorVert(-1)
@@ -409,22 +409,22 @@ func (ebox *Editbox) moveCursorPageDown() {
 
 func (ebox *Editbox) scrollToCursor() {
 	if !ebox.wrap {
-		if ebox.cursor.x-ebox.scroll.x > ebox.width-1 {
-			ebox.scroll.x = ebox.cursor.x - ebox.width + 1
-		} else if ebox.cursor.x-ebox.scroll.x < 0 {
-			ebox.scroll.x = ebox.cursor.x
+		if ebox.cursor.X-ebox.scroll.X > ebox.width-1 {
+			ebox.scroll.X = ebox.cursor.X - ebox.width + 1
+		} else if ebox.cursor.X-ebox.scroll.X < 0 {
+			ebox.scroll.X = ebox.cursor.X
 		}
 	}
 	if ebox.virtualHeight > ebox.height {
-		if ebox.cursor.y-ebox.scroll.y > ebox.height-1 {
-			ebox.scroll.y = ebox.cursor.y - ebox.height + 1
-		} else if ebox.cursor.y-ebox.scroll.y < 0 {
-			ebox.scroll.y = ebox.cursor.y
-		} else if ebox.virtualHeight-ebox.scroll.y <= ebox.height-1 {
-			ebox.scroll.y = ebox.virtualHeight - ebox.height
+		if ebox.cursor.Y-ebox.scroll.Y > ebox.height-1 {
+			ebox.scroll.Y = ebox.cursor.Y - ebox.height + 1
+		} else if ebox.cursor.Y-ebox.scroll.Y < 0 {
+			ebox.scroll.Y = ebox.cursor.Y
+		} else if ebox.virtualHeight-ebox.scroll.Y <= ebox.height-1 {
+			ebox.scroll.Y = ebox.virtualHeight - ebox.height
 		}
 	} else {
-		ebox.scroll.y = 0
+		ebox.scroll.Y = 0
 	}
 }
 
@@ -444,11 +444,11 @@ func (ebox *Editbox) renderView() {
 		for x, r := range line.text {
 			boxX, boxY = ebox.editorToBox(x, y)
 			//TODO Optimize
-			if boxY < ebox.scroll.y || boxX < ebox.scroll.x {
+			if boxY < ebox.scroll.Y || boxX < ebox.scroll.X {
 				continue
 			}
-			viewX = boxX - ebox.scroll.x
-			viewY = boxY - ebox.scroll.y
+			viewX = boxX - ebox.scroll.X
+			viewY = boxY - ebox.scroll.Y
 			if viewX > ebox.width-1 {
 				break
 			}
@@ -483,8 +483,8 @@ func (ebox *Editbox) Draw() {
 			termbox.SetCell(ebox.x+x, ebox.y+y, r, ebox.fg, ebox.bg)
 		}
 	}
-	termbox.SetCursor(ebox.x+ebox.cursor.x-ebox.scroll.x,
-		ebox.y+ebox.cursor.y-ebox.scroll.y)
+	termbox.SetCursor(ebox.x+ebox.cursor.X-ebox.scroll.X,
+		ebox.y+ebox.cursor.Y-ebox.scroll.Y)
 }
 
 func (ebox *Editbox) HandleEvent(ev *termbox.Event) bool {
