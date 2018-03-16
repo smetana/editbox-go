@@ -16,8 +16,9 @@ func main() {
 	input := editbox.NewInputbox(
 		13, 1, 25, termbox.ColorWhite, termbox.ColorBlue)
 
-	input.WaitExit()
+	ev := input.WaitExit()
 
 	termbox.Close()
-	fmt.Printf("Text entered: %s\n", input.Text())
+	fmt.Printf("Exit on: %t\n", ev)
+	fmt.Printf("Input was: %s\n", input.Text())
 }

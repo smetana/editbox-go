@@ -333,7 +333,6 @@ func (ebox *Editbox) editorToBox(x, y int) (int, int) {
 	return x, y
 }
 
-
 func (ebox *Editbox) moveCursorLeft() {
 	ebox.Editor.moveCursorLeft()
 }
@@ -515,7 +514,6 @@ func (ebox *Editbox) Render() {
 		ebox.Y+ebox.Cursor.Y-ebox.Scroll.Y)
 }
 
-
 //----------------------------------------------------------------------------
 // Widgets
 //----------------------------------------------------------------------------
@@ -571,29 +569,34 @@ func (ebox *Editbox) HandleEvent(ev *termbox.Event) {
 	}
 }
 
-
-func (ebox *Editbox) WaitExit() {
-	eventQueue := make(chan termbox.Event, 256)
+func (ebox *Editbox) WaitExit() termbox.Event {
+	events := make(chan termbox.Event, 256)
+	exitEvent := make(chan termbox.Event)
 	go func() {
 		for {
-			eventQueue <- termbox.PollEvent()
+			ev := termbox.PollEvent()
+			if ev.Type == termbox.EventKey &&
+				ev.Key == termbox.KeyEsc ||
+				ev.Key == termbox.KeyTab {
+				exitEvent <- ev
+				return
+			} else {
+				events <- ev
+			}
 		}
 	}()
 	ebox.Render()
 	termbox.Flush()
 	for {
 		select {
-		case ev := <-eventQueue:
-			if ev.Type == termbox.EventKey && ev.Key == termbox.KeyEsc {
-				close(eventQueue)
-				return
-			} else {
-				ebox.HandleEvent(&ev)
-			}
-			if len(eventQueue) == 0 {
+		case ev := <-events:
+			ebox.HandleEvent(&ev)
+			if len(events) == 0 {
 				ebox.Render()
 				termbox.Flush()
 			}
+		case ev := <-exitEvent:
+			return ev
 		}
 	}
 }
