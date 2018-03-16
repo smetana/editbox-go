@@ -517,26 +517,6 @@ func (ebox *Editbox) Render() {
 		ebox.Y+ebox.Cursor.Y-ebox.Scroll.Y)
 }
 
-//----------------------------------------------------------------------------
-// Widgets
-//----------------------------------------------------------------------------
-
-func NewInputbox(x, y, width int, fg, bg termbox.Attribute) *Editbox {
-	ebox := NewEditbox(x, y, width, 1, Options{
-		Wrap:       false,
-		Autoexpand: false,
-		Fg:         fg,
-		Bg:         bg,
-		ExitKeys: []termbox.Key{
-			termbox.KeyEsc,
-			termbox.KeyTab,
-			termbox.KeyEnter,
-		},
-	})
-	ebox.Render()
-	return ebox
-}
-
 func (ebox *Editbox) HandleEvent(ev *termbox.Event) {
 	ed := ebox.editor
 	switch ev.Type {
@@ -609,4 +589,24 @@ func (ebox *Editbox) WaitExit() termbox.Event {
 			return ev
 		}
 	}
+}
+
+//----------------------------------------------------------------------------
+// Widgets
+//----------------------------------------------------------------------------
+
+func NewInputbox(x, y, width int, fg, bg termbox.Attribute) *Editbox {
+	ebox := NewEditbox(x, y, width, 1, Options{
+		Wrap:       false,
+		Autoexpand: false,
+		Fg:         fg,
+		Bg:         bg,
+		ExitKeys: []termbox.Key{
+			termbox.KeyEsc,
+			termbox.KeyTab,
+			termbox.KeyEnter,
+		},
+	})
+	ebox.Render()
+	return ebox
 }
