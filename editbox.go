@@ -236,10 +236,10 @@ func (ed *editor) setText(text string) {
 // Editbox
 //----------------------------------------------------------------------------
 
-type Options struct {
-	Fg         termbox.Attribute
-	Bg         termbox.Attribute
-	Wrap       bool
+type options struct {
+	fg         termbox.Attribute
+	bg         termbox.Attribute
+	wrap       bool
 	autoexpand bool
 	maxHeight  int
 	printNL    bool
@@ -252,28 +252,28 @@ type Editbox struct {
 	scroll        cursor
 	X, Y          int
 	Width, Height int
-	Wrap          bool
-	Fg, Bg        termbox.Attribute
+	wrap          bool
+	fg, bg        termbox.Attribute
 	autoexpand    bool
 	printNL       bool
 	exitKeys      []termbox.Key
 	view          [][]rune
-	// Line y coord in box in Wrap mode
+	// Line y coord in box in wrap mode
 	lineBoxY      []int
 	virtualHeight int
 	minHeight     int
 	maxHeight     int
 }
 
-func NewEditbox(x, y, width, height int, options Options) *Editbox {
+func NewEditbox(x, y, width, height int, options options) *Editbox {
 	var ebox Editbox
 	ebox.X = x
 	ebox.Y = y
 	ebox.Width = width
 	ebox.Height = height
-	ebox.Fg = options.Fg
-	ebox.Bg = options.Bg
-	ebox.Wrap = options.Wrap
+	ebox.fg = options.fg
+	ebox.bg = options.bg
+	ebox.wrap = options.wrap
 	ebox.autoexpand = options.autoexpand
 	if ebox.autoexpand {
 		ebox.minHeight = height
@@ -301,7 +301,7 @@ func (ebox *Editbox) updateLineOffsets() {
 	cumulativeOffset := 0
 	for y := 0; y < linesCnt; y++ {
 		ebox.lineBoxY[y] = y + cumulativeOffset
-		if ebox.Wrap {
+		if ebox.wrap {
 			dy = (len(ed.lines[y].text) - 1) / ebox.Width
 			cumulativeOffset += dy
 		}
@@ -328,7 +328,7 @@ func (ebox *Editbox) updateLineOffsets() {
 }
 
 func (ebox *Editbox) editorToBox(x, y int) (int, int) {
-	if ebox.Wrap {
+	if ebox.wrap {
 		ldy := x / ebox.Width
 		x = x - (ldy * ebox.Width)
 		y = ebox.lineBoxY[y] + ldy
@@ -352,10 +352,10 @@ func (ebox *Editbox) moveCursorToLineEnd() {
 	ebox.editor.moveCursorToLineEnd()
 }
 
-// Cursor movement in Wrap mode is a bit tricky
+// Cursor movement in wrap mode is a bit tricky
 // TODO Code smell. Refactor
 func (ebox *Editbox) moveCursorDown() {
-	if ebox.Wrap {
+	if ebox.wrap {
 		ed := ebox.editor
 		line := ed.currentLine()
 		// Try to move within current line
@@ -389,7 +389,7 @@ func (ebox *Editbox) moveCursorDown() {
 }
 
 func (ebox *Editbox) moveCursorUp() {
-	if ebox.Wrap {
+	if ebox.wrap {
 		ed := ebox.editor
 		lastx, _ := ebox.editorToBox(ed.lastx, 0)
 		x, _ := ebox.editorToBox(ed.cursor.x, 0)
@@ -438,7 +438,7 @@ func (ebox *Editbox) moveCursorPageDown() {
 }
 
 func (ebox *Editbox) scrollToCursor() {
-	if !ebox.Wrap {
+	if !ebox.wrap {
 		if ebox.cursor.x-ebox.scroll.x > ebox.Width-1 {
 			ebox.scroll.x = ebox.cursor.x - ebox.Width + 1
 		} else if ebox.cursor.x-ebox.scroll.x < 0 {
@@ -514,7 +514,7 @@ func (ebox *Editbox) Render() {
 			} else {
 				r = ' ' // Fill empty cells with background color
 			}
-			termbox.SetCell(ebox.X+x, ebox.Y+y, r, ebox.Fg, ebox.Bg)
+			termbox.SetCell(ebox.X+x, ebox.Y+y, r, ebox.fg, ebox.bg)
 		}
 	}
 	termbox.SetCursor(ebox.X+ebox.cursor.x-ebox.scroll.x,
@@ -600,10 +600,10 @@ func (ebox *Editbox) WaitExit() termbox.Event {
 //----------------------------------------------------------------------------
 
 func NewInputbox(x, y, width int, fg, bg termbox.Attribute) *Editbox {
-	ebox := NewEditbox(x, y, width, 1, Options{
-		Fg:         fg,
-		Bg:         bg,
-		Wrap:       false,
+	ebox := NewEditbox(x, y, width, 1, options{
+		fg:         fg,
+		bg:         bg,
+		wrap:       false,
 		exitKeys: []termbox.Key{
 			termbox.KeyEsc,
 			termbox.KeyTab,
