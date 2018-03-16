@@ -38,13 +38,15 @@ func main() {
 					fmt.Println("Input 1: " + inputs[0].Text())
 					fmt.Println("Input 2: " + inputs[1].Text())
 					return
-				case termbox.KeyTab:
+				case termbox.KeyTab, termbox.KeyEnter:
 					currentInput++
 					if currentInput > 1 {
 						currentInput = 0
 					}
 					ev = inputs[currentInput].WaitExit()
 					go func() { eventQueue <- ev }()
+				default:
+					// do nothing
 				}
 			}
 		}

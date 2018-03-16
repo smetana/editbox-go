@@ -243,6 +243,7 @@ type Options struct {
 	Autoexpand bool
 	MaxHeight  int
 	PrintNL    bool
+	ExitKeys   []termbox.Key
 }
 
 type Editbox struct {
@@ -255,6 +256,7 @@ type Editbox struct {
 	Autoexpand    bool
 	Fg, Bg        termbox.Attribute
 	PrintNL       bool
+	ExitKeys      []termbox.Key
 	view          [][]rune
 	// Line y coord in box in wrap mode
 	lineBoxY      []int
@@ -274,6 +276,7 @@ func NewEditbox(x, y, width, height int, options Options) *Editbox {
 	ebox.Editor = NewEditor()
 	ebox.Wrap = options.Wrap
 	ebox.Autoexpand = options.Autoexpand
+	ebox.ExitKeys = options.ExitKeys
 	if ebox.Autoexpand {
 		ebox.minHeight = height
 		if options.MaxHeight <= 0 {
@@ -523,7 +526,13 @@ func NewInputbox(x, y, width int, fg, bg termbox.Attribute) *Editbox {
 		Wrap:       false,
 		Autoexpand: false,
 		Fg:         fg,
-		Bg:         bg})
+		Bg:         bg,
+		ExitKeys: []termbox.Key{
+			termbox.KeyEsc,
+			termbox.KeyTab,
+			termbox.KeyEnter,
+		},
+	})
 	ebox.Render()
 	return ebox
 }
@@ -575,14 +584,15 @@ func (ebox *Editbox) WaitExit() termbox.Event {
 	go func() {
 		for {
 			ev := termbox.PollEvent()
-			if ev.Type == termbox.EventKey &&
-				ev.Key == termbox.KeyEsc ||
-				ev.Key == termbox.KeyTab {
-				exitEvent <- ev
-				return
-			} else {
-				events <- ev
+			if ev.Type == termbox.EventKey {
+				for _, key := range ebox.ExitKeys {
+					if ev.Key == key {
+						exitEvent <- ev
+						return
+					}
+				}
 			}
+			events <- ev
 		}
 	}()
 	ebox.Render()
