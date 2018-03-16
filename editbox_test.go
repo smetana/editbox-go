@@ -105,8 +105,8 @@ func assertEqual(t *testing.T, actual, expected interface{}) {
 }
 
 func (ed *Editor) toLines() []string {
-	lines := make([]string, len(ed.Lines))
-	for i, line := range ed.Lines {
+	lines := make([]string, len(ed.lines))
+	for i, line := range ed.lines {
 		lines[i] = string(line.Text)
 	}
 	return lines
@@ -118,11 +118,11 @@ func (ed *Editor) toLines() []string {
 
 func TestLineSimpleInsertRune(t *testing.T) {
 	l := new(line)
-	l.InsertRune(0, 'H')
-	l.InsertRune(1, 'e')
-	l.InsertRune(2, 'l')
-	l.InsertRune(3, 'l')
-	l.InsertRune(4, 'o')
+	l.insertRune(0, 'H')
+	l.insertRune(1, 'e')
+	l.insertRune(2, 'l')
+	l.insertRune(3, 'l')
+	l.insertRune(4, 'o')
 	res := string(l.Text)
 	assertEqual(t, res, "Hello")
 }
@@ -130,21 +130,21 @@ func TestLineSimpleInsertRune(t *testing.T) {
 func TestLineInsertRune(t *testing.T) {
 	l := new(line)
 	l.Text = []rune("Sick")
-	l.InsertRune(1, 'l')
+	l.insertRune(1, 'l')
 	assertEqual(t, string(l.Text), "Slick")
 }
 
 func TestLineInsertPostion(t *testing.T) {
 	l := new(line)
 	l.Text = []rune("1")
-	l.InsertRune(0, '2')
+	l.insertRune(0, '2')
 	assertEqual(t, string(l.Text), "21")
 }
 
 func TestLineInsertCornerCase1(t *testing.T) {
 	l := new(line)
 	l.Text = []rune("1")
-	l.InsertRune(1, '2')
+	l.insertRune(1, '2')
 	assertEqual(t, string(l.Text), "12")
 }
 
@@ -156,20 +156,20 @@ func TestLineInsertOnWrongPosition(t *testing.T) {
 	}()
 	l := new(line)
 	l.Text = []rune("1")
-	l.InsertRune(2, '2')
+	l.insertRune(2, '2')
 }
 
 func TestLineInsertNewLine(t *testing.T) {
 	l := new(line)
 	l.Text = []rune("HelloWorld")
-	l.InsertRune(5, '\n')
+	l.insertRune(5, '\n')
 	assertEqual(t, string(l.Text), "Hello\nWorld")
 }
 
 func TestLineSplit(t *testing.T) {
 	l := new(line)
 	l.Text = []rune("Hello World")
-	left, right := l.Split(5)
+	left, right := l.split(5)
 	assertEqual(t, string(left.Text), "Hello")
 	assertEqual(t, string(right.Text), " World")
 }
@@ -182,7 +182,7 @@ func TestLineSplitOnWrongPosition(t *testing.T) {
 	}()
 	l := new(line)
 	l.Text = []rune("Sick")
-	_, _ = l.Split(10)
+	_, _ = l.split(10)
 }
 
 func TestLineDeleteOnWrongPosition(t *testing.T) {
@@ -193,19 +193,19 @@ func TestLineDeleteOnWrongPosition(t *testing.T) {
 	}()
 	l := new(line)
 	l.Text = []rune("1")
-	l.DeleteRune(2)
+	l.deleteRune(2)
 }
 
 func TestLineDelete(t *testing.T) {
 	l := new(line)
 	l.Text = []rune("12")
-	l.DeleteRune(1)
+	l.deleteRune(1)
 	assertEqual(t, string(l.Text), "1")
 	l.Text = []rune("12")
-	l.DeleteRune(0)
+	l.deleteRune(0)
 	assertEqual(t, string(l.Text), "2")
 	l.Text = []rune("")
-	l.DeleteRune(0)
+	l.deleteRune(0)
 	assertEqual(t, string(l.Text), "")
 }
 
@@ -231,44 +231,44 @@ func TestLineLastRuneX(t *testing.T) {
 
 func TestEditorInsertRune(t *testing.T) {
 	ed := NewEditor()
-	assertEqual(t, ed.Cursor.Y, 0)
-	assertEqual(t, ed.Cursor.X, 0)
+	assertEqual(t, ed.cursor.Y, 0)
+	assertEqual(t, ed.cursor.X, 0)
 	ed.InsertRune('H')
 	ed.InsertRune('e')
 	ed.InsertRune('l')
 	ed.InsertRune('l')
 	ed.InsertRune('o')
 	assertEqual(t, string(ed.Text()), "Hello")
-	assertEqual(t, ed.Cursor.Y, 0)
-	assertEqual(t, ed.Cursor.X, 5)
+	assertEqual(t, ed.cursor.Y, 0)
+	assertEqual(t, ed.cursor.X, 5)
 	ed.InsertRune('!')
 	assertEqual(t, string(ed.Text()), "Hello!")
-	assertEqual(t, ed.Cursor.Y, 0)
-	assertEqual(t, ed.Cursor.X, 6)
+	assertEqual(t, ed.cursor.Y, 0)
+	assertEqual(t, ed.cursor.X, 6)
 }
 
 func TestEditorInsertOnCursorPosition(t *testing.T) {
 	ed := NewEditor()
-	assertEqual(t, ed.Cursor.Y, 0)
-	assertEqual(t, ed.Cursor.X, 0)
+	assertEqual(t, ed.cursor.Y, 0)
+	assertEqual(t, ed.cursor.X, 0)
 	ed.InsertRune('1')
-	assertEqual(t, ed.Cursor.Y, 0)
-	assertEqual(t, ed.Cursor.X, 1)
+	assertEqual(t, ed.cursor.Y, 0)
+	assertEqual(t, ed.cursor.X, 1)
 	assertEqual(t, string(ed.Text()), "1")
 	ed.moveCursorLeft()
-	assertEqual(t, ed.Cursor.Y, 0)
-	assertEqual(t, ed.Cursor.X, 0)
+	assertEqual(t, ed.cursor.Y, 0)
+	assertEqual(t, ed.cursor.X, 0)
 	ed.InsertRune('2')
 	assertEqual(t, string(ed.Text()), "21")
-	assertEqual(t, ed.Cursor.Y, 0)
-	assertEqual(t, ed.Cursor.X, 1)
+	assertEqual(t, ed.cursor.Y, 0)
+	assertEqual(t, ed.cursor.X, 1)
 }
 
 func TestEditorCurrentLine(t *testing.T) {
 	ed := NewEditor()
 	ed.setText("Hello World!\nSecond Line\nThird Line")
-	ed.Cursor.X = 2
-	ed.Cursor.Y = 1
+	ed.cursor.X = 2
+	ed.cursor.Y = 1
 	assertEqual(t, string(ed.CurrentLine().Text), "Second Line\n")
 }
 
@@ -285,9 +285,9 @@ func TestEditorSplitLine(t *testing.T) {
 func TestEditorInsertNewLine(t *testing.T) {
 	ed := NewEditor()
 	ed.setText("12345")
-	assertEqual(t, len(ed.Lines), 1)
+	assertEqual(t, len(ed.lines), 1)
 	ed.InsertRune('\n')
-	assertEqual(t, len(ed.Lines), 2)
+	assertEqual(t, len(ed.lines), 2)
 }
 
 func TestMoveCursorLeft(t *testing.T) {
@@ -295,12 +295,12 @@ func TestMoveCursorLeft(t *testing.T) {
 	ed.InsertRune('1')
 	ed.InsertRune('2')
 	ed.InsertRune('\n')
-	assertEqual(t, len(ed.Lines), 2)
-	assertEqual(t, ed.Cursor.Y, 1)
-	assertEqual(t, ed.Cursor.X, 0)
+	assertEqual(t, len(ed.lines), 2)
+	assertEqual(t, ed.cursor.Y, 1)
+	assertEqual(t, ed.cursor.X, 0)
 	ed.moveCursorLeft()
-	assertEqual(t, ed.Cursor.Y, 0)
-	assertEqual(t, ed.Cursor.X, 2)
+	assertEqual(t, ed.cursor.Y, 0)
+	assertEqual(t, ed.cursor.X, 2)
 }
 
 func TestBackspace(t *testing.T) {
@@ -310,29 +310,29 @@ func TestBackspace(t *testing.T) {
 	ed.InsertRune('\n')
 	ed.InsertRune('1')
 
-	assertEqual(t, len(ed.Lines), 2)
-	assertEqual(t, ed.Cursor.Y, 1)
-	assertEqual(t, ed.Cursor.X, 1)
+	assertEqual(t, len(ed.lines), 2)
+	assertEqual(t, ed.cursor.Y, 1)
+	assertEqual(t, ed.cursor.X, 1)
 	ed.DeleteRuneBeforeCursor()
 
 	assertEqual(t, ed.Text(), "12\n")
-	assertEqual(t, len(ed.Lines), 2)
-	assertEqual(t, ed.Cursor.Y, 1)
-	assertEqual(t, ed.Cursor.X, 0)
+	assertEqual(t, len(ed.lines), 2)
+	assertEqual(t, ed.cursor.Y, 1)
+	assertEqual(t, ed.cursor.X, 0)
 
 	ed.DeleteRuneBeforeCursor()
 	assertEqual(t, ed.Text(), "12")
-	assertEqual(t, len(ed.Lines), 1)
-	assertEqual(t, ed.Cursor.Y, 0)
-	assertEqual(t, ed.Cursor.X, 2)
+	assertEqual(t, len(ed.lines), 1)
+	assertEqual(t, ed.cursor.Y, 0)
+	assertEqual(t, ed.cursor.X, 2)
 
 	ed.DeleteRuneBeforeCursor()
 	ed.DeleteRuneBeforeCursor()
 
 	assertEqual(t, ed.Text(), "")
-	assertEqual(t, len(ed.Lines), 1)
-	assertEqual(t, ed.Cursor.Y, 0)
-	assertEqual(t, ed.Cursor.X, 0)
+	assertEqual(t, len(ed.lines), 1)
+	assertEqual(t, ed.cursor.Y, 0)
+	assertEqual(t, ed.cursor.X, 0)
 }
 
 func TestDeleteAtCursor(t *testing.T) {
@@ -345,27 +345,27 @@ func TestDeleteAtCursor(t *testing.T) {
 	ed.InsertRune('4')
 	ed.InsertRune('5')
 
-	ed.Cursor.X = 0
-	ed.Cursor.Y = 1
+	ed.cursor.X = 0
+	ed.cursor.Y = 1
 
 	assertEqual(t, ed.Text(), "12\n3\n45")
-	assertEqual(t, len(ed.Lines), 3)
-	assertEqual(t, ed.Cursor.Y, 1)
-	assertEqual(t, ed.Cursor.X, 0)
+	assertEqual(t, len(ed.lines), 3)
+	assertEqual(t, ed.cursor.Y, 1)
+	assertEqual(t, ed.cursor.X, 0)
 
 	ed.DeleteRuneAtCursor()
-	assertEqual(t, len(ed.Lines), 3)
+	assertEqual(t, len(ed.lines), 3)
 	assertEqual(t, ed.Text(), "12\n\n45")
 
 	ed.DeleteRuneAtCursor()
-	assertEqual(t, len(ed.Lines), 2)
+	assertEqual(t, len(ed.lines), 2)
 	assertEqual(t, ed.Text(), "12\n45")
 
 	ed.DeleteRuneAtCursor()
 	ed.DeleteRuneAtCursor()
 	ed.DeleteRuneAtCursor() // No effect
 
-	assertEqual(t, len(ed.Lines), 2)
+	assertEqual(t, len(ed.lines), 2)
 	assertEqual(t, ed.Text(), "12\n")
 }
 
@@ -379,17 +379,17 @@ func TestMoveCursorToLineEnd(t *testing.T) {
 	ed.InsertRune('4')
 	ed.InsertRune('5')
 
-	ed.Cursor.X = 0
-	ed.Cursor.Y = 0
+	ed.cursor.X = 0
+	ed.cursor.Y = 0
 	ed.moveCursorToLineEnd()
-	assertEqual(t, ed.Cursor.Y, 0)
-	assertEqual(t, ed.Cursor.X, 2)
+	assertEqual(t, ed.cursor.Y, 0)
+	assertEqual(t, ed.cursor.X, 2)
 
-	ed.Cursor.X = 0
-	ed.Cursor.Y = 2
+	ed.cursor.X = 0
+	ed.cursor.Y = 2
 	ed.moveCursorToLineEnd()
-	assertEqual(t, ed.Cursor.Y, 2)
-	assertEqual(t, ed.Cursor.X, 2)
+	assertEqual(t, ed.cursor.Y, 2)
+	assertEqual(t, ed.cursor.X, 2)
 }
 
 func TestMoveCursorToEmptyLine(t *testing.T) {
@@ -397,16 +397,16 @@ func TestMoveCursorToEmptyLine(t *testing.T) {
 	ed.InsertRune('1')
 	ed.InsertRune('2')
 	ed.InsertRune('\n')
-	assertEqual(t, ed.Cursor.Y, 1)
-	assertEqual(t, ed.Cursor.X, 0)
+	assertEqual(t, ed.cursor.Y, 1)
+	assertEqual(t, ed.cursor.X, 0)
 
 	ed.moveCursorVert(-1)
-	assertEqual(t, ed.Cursor.Y, 0)
-	assertEqual(t, ed.Cursor.X, 0)
+	assertEqual(t, ed.cursor.Y, 0)
+	assertEqual(t, ed.cursor.X, 0)
 
 	ed.moveCursorVert(+1)
-	assertEqual(t, ed.Cursor.Y, 1)
-	assertEqual(t, ed.Cursor.X, 0)
+	assertEqual(t, ed.cursor.Y, 1)
+	assertEqual(t, ed.cursor.X, 0)
 }
 
 // TODO Add tests for cursor navigation
@@ -497,8 +497,8 @@ func TestMoveDown(t *testing.T) {
 0
 11122233
 44`)
-	eb.Editor.Cursor.X = 0
-	eb.Editor.Cursor.Y = 0
+	eb.Editor.cursor.X = 0
+	eb.Editor.cursor.Y = 0
 	eb.moveCursorRight()
 	eb.moveCursorRight()
 	eb.updateLineOffsets()
@@ -557,8 +557,8 @@ func TestMoveDown(t *testing.T) {
 func TestMoveDownOneLine(t *testing.T) {
 	eb := NewEditbox(0, 0, 3, 3, Options{Wrap: true})
 	eb.Editor.setText(`11122233`)
-	eb.Editor.Cursor.X = 0
-	eb.Editor.Cursor.Y = 0
+	eb.Editor.cursor.X = 0
+	eb.Editor.cursor.Y = 0
 	eb.moveCursorRight()
 	eb.moveCursorRight()
 	eb.updateLineOffsets()
@@ -583,8 +583,8 @@ func TestMoveUp(t *testing.T) {
 0
 11122233
 44`)
-	eb.Editor.Cursor.X = 0
-	eb.Editor.Cursor.Y = 6
+	eb.Editor.cursor.X = 0
+	eb.Editor.cursor.Y = 6
 	eb.moveCursorRight()
 	eb.moveCursorRight()
 	eb.updateLineOffsets()
