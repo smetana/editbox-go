@@ -16,20 +16,20 @@ type Cursor struct {
 }
 
 //----------------------------------------------------------------------------
-// Line
+// line
 //----------------------------------------------------------------------------
 
-type Line struct {
+type line struct {
 	Text []rune
 }
 
-func (l *Line) checkXPosition(x int) {
+func (l *line) checkXPosition(x int) {
 	if x < 0 || x > len(l.Text) {
 		panic("x position out of range")
 	}
 }
 
-func (l *Line) InsertRune(pos int, r rune) {
+func (l *line) InsertRune(pos int, r rune) {
 	l.checkXPosition(pos)
 	// Append
 	if pos == len(l.Text) {
@@ -42,16 +42,16 @@ func (l *Line) InsertRune(pos int, r rune) {
 	}
 }
 
-func (l *Line) Split(pos int) (left, right *Line) {
+func (l *line) Split(pos int) (left, right *line) {
 	l.checkXPosition(pos)
-	left, right = l, new(Line)
+	left, right = l, new(line)
 	right.Text = make([]rune, len(l.Text)-pos)
 	copy(right.Text, l.Text[pos:len(l.Text)])
 	left.Text = left.Text[:pos]
 	return
 }
 
-func (l *Line) DeleteRune(pos int) rune {
+func (l *line) DeleteRune(pos int) rune {
 	l.checkXPosition(pos)
 	if pos < len(l.Text) {
 		r := l.Text[pos]
@@ -64,11 +64,11 @@ func (l *Line) DeleteRune(pos int) rune {
 	}
 }
 
-func (l *Line) lastRune() rune {
+func (l *line) lastRune() rune {
 	return l.Text[len(l.Text)-1]
 }
 
-func (l *Line) lastRuneX() int {
+func (l *line) lastRuneX() int {
 	if l.lastRune() == '\n' {
 		return (len(l.Text) - 1)
 	} else {
@@ -81,14 +81,14 @@ func (l *Line) lastRuneX() int {
 //----------------------------------------------------------------------------
 
 type Editor struct {
-	Lines  []Line
+	Lines  []line
 	Cursor Cursor
 	lastx  int
 }
 
 func NewEditor() *Editor {
 	var ed Editor
-	ed.Lines = make([]Line, 1)
+	ed.Lines = make([]line, 1)
 	ed.Cursor.X = 0
 	ed.Cursor.Y = 0
 	return &ed
@@ -102,14 +102,14 @@ func (ed *Editor) Text() string {
 	return b.String()
 }
 
-func (ed *Editor) CurrentLine() *Line {
+func (ed *Editor) CurrentLine() *line {
 	return &ed.Lines[ed.Cursor.Y]
 }
 
 func (ed *Editor) splitLine(x, y int) {
-	line := &ed.Lines[y]
-	left, right := line.Split(x)
-	ed.Lines = append(ed.Lines, *(new(Line)))
+	l := &ed.Lines[y]
+	left, right := l.Split(x)
+	ed.Lines = append(ed.Lines, *(new(line)))
 	copy(ed.Lines[y+2:], ed.Lines[y+1:])
 	ed.Lines[y] = *left
 	ed.Lines[y+1] = *right
@@ -145,8 +145,8 @@ func (ed *Editor) DeleteRuneBeforeCursor() {
 
 func (ed *Editor) DeleteRuneAtCursor() {
 	cursor := &ed.Cursor
-	line := ed.CurrentLine()
-	r := line.DeleteRune(cursor.X)
+	l := ed.CurrentLine()
+	r := l.DeleteRune(cursor.X)
 	if r == '\n' && cursor.Y < len(ed.Lines)-1 {
 		left := &ed.Lines[cursor.Y]
 		right := &ed.Lines[cursor.Y+1]
@@ -155,7 +155,7 @@ func (ed *Editor) DeleteRuneAtCursor() {
 			ed.Lines = ed.Lines[:cursor.Y+1]
 		} else {
 			copy(ed.Lines[cursor.Y+1:], ed.Lines[cursor.Y+2:])
-			ed.Lines[len(ed.Lines)-1] = *(new(Line))
+			ed.Lines[len(ed.Lines)-1] = *(new(line))
 			ed.Lines = ed.Lines[:len(ed.Lines)-1]
 		}
 	}

@@ -113,11 +113,11 @@ func (ed *Editor) toLines() []string {
 }
 
 // ----------------------------------------------------------------------------
-// Line Tests
+// line Tests
 // ----------------------------------------------------------------------------
 
 func TestLineSimpleInsertRune(t *testing.T) {
-	l := new(Line)
+	l := new(line)
 	l.InsertRune(0, 'H')
 	l.InsertRune(1, 'e')
 	l.InsertRune(2, 'l')
@@ -128,21 +128,21 @@ func TestLineSimpleInsertRune(t *testing.T) {
 }
 
 func TestLineInsertRune(t *testing.T) {
-	l := new(Line)
+	l := new(line)
 	l.Text = []rune("Sick")
 	l.InsertRune(1, 'l')
 	assertEqual(t, string(l.Text), "Slick")
 }
 
 func TestLineInsertPostion(t *testing.T) {
-	l := new(Line)
+	l := new(line)
 	l.Text = []rune("1")
 	l.InsertRune(0, '2')
 	assertEqual(t, string(l.Text), "21")
 }
 
 func TestLineInsertCornerCase1(t *testing.T) {
-	l := new(Line)
+	l := new(line)
 	l.Text = []rune("1")
 	l.InsertRune(1, '2')
 	assertEqual(t, string(l.Text), "12")
@@ -154,20 +154,20 @@ func TestLineInsertOnWrongPosition(t *testing.T) {
 			t.Errorf("Wrong panic: %+q", r)
 		}
 	}()
-	l := new(Line)
+	l := new(line)
 	l.Text = []rune("1")
 	l.InsertRune(2, '2')
 }
 
 func TestLineInsertNewLine(t *testing.T) {
-	l := new(Line)
+	l := new(line)
 	l.Text = []rune("HelloWorld")
 	l.InsertRune(5, '\n')
 	assertEqual(t, string(l.Text), "Hello\nWorld")
 }
 
 func TestLineSplit(t *testing.T) {
-	l := new(Line)
+	l := new(line)
 	l.Text = []rune("Hello World")
 	left, right := l.Split(5)
 	assertEqual(t, string(left.Text), "Hello")
@@ -180,7 +180,7 @@ func TestLineSplitOnWrongPosition(t *testing.T) {
 			t.Errorf("Wrong panic: %+q", r)
 		}
 	}()
-	l := new(Line)
+	l := new(line)
 	l.Text = []rune("Sick")
 	_, _ = l.Split(10)
 }
@@ -191,13 +191,13 @@ func TestLineDeleteOnWrongPosition(t *testing.T) {
 			t.Errorf("Wrong panic: %+q", r)
 		}
 	}()
-	l := new(Line)
+	l := new(line)
 	l.Text = []rune("1")
 	l.DeleteRune(2)
 }
 
 func TestLineDelete(t *testing.T) {
-	l := new(Line)
+	l := new(line)
 	l.Text = []rune("12")
 	l.DeleteRune(1)
 	assertEqual(t, string(l.Text), "1")
@@ -210,7 +210,7 @@ func TestLineDelete(t *testing.T) {
 }
 
 func TestLineLastRune(t *testing.T) {
-	l := new(Line)
+	l := new(line)
 	l.Text = []rune("12")
 	assertEqual(t, l.lastRune(), '2')
 	l.Text = []rune("12\n")
@@ -218,7 +218,7 @@ func TestLineLastRune(t *testing.T) {
 }
 
 func TestLineLastRuneX(t *testing.T) {
-	l := new(Line)
+	l := new(line)
 	l.Text = []rune("12")
 	assertEqual(t, l.lastRuneX(), 2)
 	l.Text = []rune("12\n")
