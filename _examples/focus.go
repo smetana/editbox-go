@@ -21,34 +21,24 @@ func main() {
 	termbox.SetCursor(-1, -1)
 	termbox.Flush()
 
-	eventQueue := make(chan termbox.Event)
-	go func() {
-		for {
-			eventQueue <- termbox.PollEvent()
-		}
-	}()
-	currentInput := -1
+	currentInput := inputs[1]
+	ev := termbox.PollEvent()
 	for {
-		select {
-		case ev := <-eventQueue:
-			if ev.Type == termbox.EventKey {
-				switch ev.Key {
-				case termbox.KeyEsc:
-					termbox.Close()
-					fmt.Println("Input 1: " + inputs[0].Text())
-					fmt.Println("Input 2: " + inputs[1].Text())
-					return
-				case termbox.KeyTab, termbox.KeyEnter:
-					currentInput++
-					if currentInput > 1 {
-						currentInput = 0
-					}
-					ev = inputs[currentInput].WaitExit()
-					go func() { eventQueue <- ev }()
-				default:
-					// do nothing
-				}
+		switch ev.Key {
+		case termbox.KeyEsc:
+			termbox.Close()
+			fmt.Println("Input 1: " + inputs[0].Text())
+			fmt.Println("Input 2: " + inputs[1].Text())
+			return
+		case termbox.KeyTab, termbox.KeyEnter:
+			if currentInput == inputs[1] {
+				currentInput = inputs[0]
+			} else {
+				currentInput = inputs[1]
 			}
+			ev = currentInput.WaitExit()
+		default:
+			ev = termbox.PollEvent()
 		}
 	}
 }
