@@ -20,11 +20,11 @@ type Cursor struct {
 //----------------------------------------------------------------------------
 
 type line struct {
-	Text []rune
+	text []rune
 }
 
 func (l *line) checkXPosition(x int) {
-	if x < 0 || x > len(l.Text) {
+	if x < 0 || x > len(l.text) {
 		panic("x position out of range")
 	}
 }
@@ -32,32 +32,32 @@ func (l *line) checkXPosition(x int) {
 func (l *line) insertRune(pos int, r rune) {
 	l.checkXPosition(pos)
 	// Append
-	if pos == len(l.Text) {
-		l.Text = append(l.Text, r)
+	if pos == len(l.text) {
+		l.text = append(l.text, r)
 		// Insert
 	} else {
-		l.Text = append(l.Text, rune(0))
-		copy(l.Text[pos+1:], l.Text[pos:])
-		l.Text[pos] = r
+		l.text = append(l.text, rune(0))
+		copy(l.text[pos+1:], l.text[pos:])
+		l.text[pos] = r
 	}
 }
 
 func (l *line) split(pos int) (left, right *line) {
 	l.checkXPosition(pos)
 	left, right = l, new(line)
-	right.Text = make([]rune, len(l.Text)-pos)
-	copy(right.Text, l.Text[pos:len(l.Text)])
-	left.Text = left.Text[:pos]
+	right.text = make([]rune, len(l.text)-pos)
+	copy(right.text, l.text[pos:len(l.text)])
+	left.text = left.text[:pos]
 	return
 }
 
 func (l *line) deleteRune(pos int) rune {
 	l.checkXPosition(pos)
-	if pos < len(l.Text) {
-		r := l.Text[pos]
-		copy(l.Text[pos:], l.Text[pos+1:])
-		l.Text[len(l.Text)-1] = rune(0)
-		l.Text = l.Text[:len(l.Text)-1]
+	if pos < len(l.text) {
+		r := l.text[pos]
+		copy(l.text[pos:], l.text[pos+1:])
+		l.text[len(l.text)-1] = rune(0)
+		l.text = l.text[:len(l.text)-1]
 		return r
 	} else {
 		return rune(0)
@@ -65,48 +65,48 @@ func (l *line) deleteRune(pos int) rune {
 }
 
 func (l *line) lastRune() rune {
-	return l.Text[len(l.Text)-1]
+	return l.text[len(l.text)-1]
 }
 
 func (l *line) lastRuneX() int {
 	if l.lastRune() == '\n' {
-		return (len(l.Text) - 1)
+		return (len(l.text) - 1)
 	} else {
-		return (len(l.Text))
+		return (len(l.text))
 	}
 }
 
 //----------------------------------------------------------------------------
-// Editor
+// editor
 //----------------------------------------------------------------------------
 
-type Editor struct {
+type editor struct {
 	lines  []line
 	cursor Cursor
 	lastx  int
 }
 
-func NewEditor() *Editor {
-	var ed Editor
+func newEditor() *editor {
+	var ed editor
 	ed.lines = make([]line, 1)
 	ed.cursor.X = 0
 	ed.cursor.Y = 0
 	return &ed
 }
 
-func (ed *Editor) Text() string {
+func (ed *editor) text() string {
 	var b bytes.Buffer
 	for _, l := range ed.lines {
-		b.WriteString(string(l.Text))
+		b.WriteString(string(l.text))
 	}
 	return b.String()
 }
 
-func (ed *Editor) CurrentLine() *line {
+func (ed *editor) currentLine() *line {
 	return &ed.lines[ed.cursor.Y]
 }
 
-func (ed *Editor) splitLine(x, y int) {
+func (ed *editor) splitLine(x, y int) {
 	l := &ed.lines[y]
 	left, right := l.split(x)
 	ed.lines = append(ed.lines, *(new(line)))
@@ -115,9 +115,9 @@ func (ed *Editor) splitLine(x, y int) {
 	ed.lines[y+1] = *right
 }
 
-func (ed *Editor) InsertRune(r rune) {
+func (ed *editor) insertRune(r rune) {
 	cursor := &ed.cursor
-	line := ed.CurrentLine()
+	line := ed.currentLine()
 	line.insertRune(cursor.X, r)
 	cursor.X += 1
 	if r == '\n' {
@@ -128,13 +128,13 @@ func (ed *Editor) InsertRune(r rune) {
 	ed.lastx = cursor.X
 }
 
-func (ed *Editor) checkYPosition(y int) {
+func (ed *editor) checkYPosition(y int) {
 	if y < 0 || y > len(ed.lines) {
 		panic("y position out of range")
 	}
 }
 
-func (ed *Editor) DeleteRuneBeforeCursor() {
+func (ed *editor) DeleteRuneBeforeCursor() {
 	cursor := &ed.cursor
 	if cursor.X == 0 && cursor.Y == 0 {
 		return
@@ -143,14 +143,14 @@ func (ed *Editor) DeleteRuneBeforeCursor() {
 	ed.DeleteRuneAtCursor()
 }
 
-func (ed *Editor) DeleteRuneAtCursor() {
+func (ed *editor) DeleteRuneAtCursor() {
 	cursor := &ed.cursor
-	l := ed.CurrentLine()
+	l := ed.currentLine()
 	r := l.deleteRune(cursor.X)
 	if r == '\n' && cursor.Y < len(ed.lines)-1 {
 		left := &ed.lines[cursor.Y]
 		right := &ed.lines[cursor.Y+1]
-		left.Text = append(left.Text, right.Text...)
+		left.text = append(left.text, right.text...)
 		if cursor.Y == len(ed.lines)-2 {
 			ed.lines = ed.lines[:cursor.Y+1]
 		} else {
@@ -161,29 +161,29 @@ func (ed *Editor) DeleteRuneAtCursor() {
 	}
 }
 
-func (ed *Editor) moveCursorRight() {
+func (ed *editor) moveCursorRight() {
 	cursor := &ed.cursor
-	line := ed.CurrentLine()
+	line := ed.currentLine()
 	cursor.X += 1
-	if cursor.X >= len(line.Text) {
+	if cursor.X >= len(line.text) {
 		if cursor.Y < len(ed.lines)-1 {
 			cursor.Y += 1
 			cursor.X = 0
 		} else {
-			cursor.X = len(line.Text)
+			cursor.X = len(line.text)
 		}
 	}
 	ed.lastx = cursor.X
 }
 
-func (ed *Editor) moveCursorLeft() {
+func (ed *editor) moveCursorLeft() {
 	cursor := &ed.cursor
 	cursor.X -= 1
 	if cursor.X < 0 {
 		if cursor.Y > 0 {
 			cursor.Y -= 1
-			line := ed.CurrentLine()
-			cursor.X = len(line.Text) - 1
+			line := ed.currentLine()
+			cursor.X = len(line.text) - 1
 		} else {
 			cursor.X = 0
 		}
@@ -191,21 +191,21 @@ func (ed *Editor) moveCursorLeft() {
 	ed.lastx = cursor.X
 }
 
-func (ed *Editor) moveCursorToLineStart() {
+func (ed *editor) moveCursorToLineStart() {
 	ed.cursor.X, ed.lastx = 0, 0
 }
 
-func (ed *Editor) moveCursorToLineEnd() {
-	line := ed.CurrentLine()
+func (ed *editor) moveCursorToLineEnd() {
+	line := ed.currentLine()
 	if line.lastRune() == '\n' {
-		ed.cursor.X = len(line.Text) - 1
+		ed.cursor.X = len(line.text) - 1
 	} else {
-		ed.cursor.X = len(line.Text)
+		ed.cursor.X = len(line.text)
 	}
 	ed.lastx = ed.cursor.X
 }
 
-func (ed *Editor) moveCursorVert(dy int) {
+func (ed *editor) moveCursorVert(dy int) {
 	cursor := &ed.cursor
 	if cursor.Y+dy < 0 {
 		return
@@ -214,21 +214,21 @@ func (ed *Editor) moveCursorVert(dy int) {
 		return
 	}
 	cursor.Y += dy
-	line := ed.CurrentLine()
+	line := ed.currentLine()
 	switch {
-	case len(line.Text) == 0:
+	case len(line.text) == 0:
 		cursor.X = 0
-	case ed.lastx >= len(line.Text):
-		cursor.X = len(line.Text) - 1
+	case ed.lastx >= len(line.text):
+		cursor.X = len(line.text) - 1
 	default:
 		cursor.X = ed.lastx
 	}
 }
 
 // TODO Refactor
-func (ed *Editor) setText(text string) {
+func (ed *editor) setText(text string) {
 	for _, s := range text {
-		ed.InsertRune(rune(s))
+		ed.insertRune(rune(s))
 	}
 }
 
@@ -247,7 +247,7 @@ type Options struct {
 }
 
 type Editbox struct {
-	Editor        *Editor
+	editor        *editor
 	Cursor        Cursor
 	Scroll        Cursor
 	X, Y          int
@@ -273,7 +273,7 @@ func NewEditbox(x, y, width, height int, options Options) *Editbox {
 	ebox.Height = height
 	ebox.Fg = options.Fg
 	ebox.Bg = options.Bg
-	ebox.Editor = NewEditor()
+	ebox.editor = newEditor()
 	ebox.Wrap = options.Wrap
 	ebox.Autoexpand = options.Autoexpand
 	ebox.ExitKeys = options.ExitKeys
@@ -290,11 +290,11 @@ func NewEditbox(x, y, width, height int, options Options) *Editbox {
 }
 
 func (ebox *Editbox) Text() string {
-	return ebox.Editor.Text()
+	return ebox.editor.text()
 }
 
 func (ebox *Editbox) updateLineOffsets() {
-	ed := ebox.Editor
+	ed := ebox.editor
 	linesCnt := len(ed.lines)
 	ebox.lineBoxY = make([]int, linesCnt)
 	dy := 0 // delta between editor y and box Y
@@ -302,7 +302,7 @@ func (ebox *Editbox) updateLineOffsets() {
 	for y := 0; y < linesCnt; y++ {
 		ebox.lineBoxY[y] = y + cumulativeOffset
 		if ebox.Wrap {
-			dy = (len(ed.lines[y].Text) - 1) / ebox.Width
+			dy = (len(ed.lines[y].text) - 1) / ebox.Width
 			cumulativeOffset += dy
 		}
 	}
@@ -337,33 +337,33 @@ func (ebox *Editbox) editorToBox(x, y int) (int, int) {
 }
 
 func (ebox *Editbox) moveCursorLeft() {
-	ebox.Editor.moveCursorLeft()
+	ebox.editor.moveCursorLeft()
 }
 
 func (ebox *Editbox) moveCursorRight() {
-	ebox.Editor.moveCursorRight()
+	ebox.editor.moveCursorRight()
 }
 
 func (ebox *Editbox) moveCursorToLineStart() {
-	ebox.Editor.moveCursorToLineStart()
+	ebox.editor.moveCursorToLineStart()
 }
 
 func (ebox *Editbox) moveCursorToLineEnd() {
-	ebox.Editor.moveCursorToLineEnd()
+	ebox.editor.moveCursorToLineEnd()
 }
 
 // Cursor movement in wrap mode is a bit tricky
 // TODO Code smell. Refactor
 func (ebox *Editbox) moveCursorDown() {
 	if ebox.Wrap {
-		ed := ebox.Editor
-		line := ed.CurrentLine()
+		ed := ebox.editor
+		line := ed.currentLine()
 		// Try to move within current line
-		if ed.cursor.X+ebox.Width < len(line.Text) {
+		if ed.cursor.X+ebox.Width < len(line.text) {
 			ed.cursor.X += ebox.Width
 			return
 		}
-		if ebox.Cursor.X+(len(line.Text)-ed.cursor.X)-1 >= ebox.Width {
+		if ebox.Cursor.X+(len(line.text)-ed.cursor.X)-1 >= ebox.Width {
 			ed.cursor.X = line.lastRuneX()
 			return
 		}
@@ -372,25 +372,25 @@ func (ebox *Editbox) moveCursorDown() {
 			return
 		}
 		ed.cursor.Y += 1
-		line = ed.CurrentLine()
-		if len(line.Text) == 0 {
+		line = ed.currentLine()
+		if len(line.text) == 0 {
 			ed.cursor.X = 0
 			return
 		}
 		x, _ := ebox.editorToBox(ed.lastx, 0)
-		if x >= len(line.Text) {
+		if x >= len(line.text) {
 			ed.cursor.X = line.lastRuneX()
 		} else {
 			ed.cursor.X = x
 		}
 	} else {
-		ebox.Editor.moveCursorVert(+1)
+		ebox.editor.moveCursorVert(+1)
 	}
 }
 
 func (ebox *Editbox) moveCursorUp() {
 	if ebox.Wrap {
-		ed := ebox.Editor
+		ed := ebox.editor
 		lastx, _ := ebox.editorToBox(ed.lastx, 0)
 		x, _ := ebox.editorToBox(ed.cursor.X, 0)
 		if x == lastx && ed.cursor.X-ebox.Width >= 0 {
@@ -406,7 +406,7 @@ func (ebox *Editbox) moveCursorUp() {
 			return
 		}
 		ed.cursor.Y -= 1
-		line := ed.CurrentLine()
+		line := ed.currentLine()
 		if ed.lastx < ebox.Width {
 			ed.cursor.X = ed.lastx
 		}
@@ -421,7 +421,7 @@ func (ebox *Editbox) moveCursorUp() {
 			ed.cursor.X = line.lastRuneX() - x + lastx
 		}
 	} else {
-		ebox.Editor.moveCursorVert(-1)
+		ebox.editor.moveCursorVert(-1)
 	}
 }
 
@@ -461,7 +461,7 @@ func (ebox *Editbox) scrollToCursor() {
 func (ebox *Editbox) renderView() {
 	ebox.updateLineOffsets()
 	ebox.scrollToCursor()
-	ed := ebox.Editor
+	ed := ebox.editor
 	var (
 		boxX, boxY   int
 		viewX, viewY int
@@ -471,7 +471,7 @@ func (ebox *Editbox) renderView() {
 		ebox.view[i] = make([]rune, ebox.Width)
 	}
 	for y, line := range ed.lines {
-		for x, r := range line.Text {
+		for x, r := range line.text {
 			boxX, boxY = ebox.editorToBox(x, y)
 			//TODO Optimize
 			if boxY < ebox.Scroll.Y || boxX < ebox.Scroll.X {
@@ -538,7 +538,7 @@ func NewInputbox(x, y, width int, fg, bg termbox.Attribute) *Editbox {
 }
 
 func (ebox *Editbox) HandleEvent(ev *termbox.Event) {
-	ed := ebox.Editor
+	ed := ebox.editor
 	switch ev.Type {
 	case termbox.EventKey:
 		switch ev.Key {
@@ -563,12 +563,12 @@ func (ebox *Editbox) HandleEvent(ev *termbox.Event) {
 		case termbox.KeyDelete:
 			ed.DeleteRuneAtCursor()
 		case termbox.KeyEnter:
-			ed.InsertRune('\n')
+			ed.insertRune('\n')
 		case termbox.KeySpace:
-			ed.InsertRune(' ')
+			ed.insertRune(' ')
 		default:
 			if ev.Ch != 0 {
-				ed.InsertRune(ev.Ch)
+				ed.insertRune(ev.Ch)
 			}
 		}
 	case termbox.EventError:
