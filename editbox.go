@@ -530,14 +530,11 @@ func NewInputbox(x, y, width int, fg, bg termbox.Attribute) *Editbox {
 	return ebox
 }
 
-func (ebox *Editbox) HandleEvent(ev *termbox.Event) bool {
+func (ebox *Editbox) HandleEvent(ev *termbox.Event) {
 	ed := ebox.Editor
 	switch ev.Type {
 	case termbox.EventKey:
 		switch ev.Key {
-		case termbox.KeyEsc:
-			// Quit
-			return false
 		case termbox.KeyArrowLeft:
 			ebox.moveCursorLeft()
 		case termbox.KeyArrowRight:
@@ -572,6 +569,31 @@ func (ebox *Editbox) HandleEvent(ev *termbox.Event) bool {
 	default:
 		// TODO
 	}
+}
+
+
+func (ebox *Editbox) WaitExit() {
+	eventQueue := make(chan termbox.Event, 256)
+	go func() {
+		for {
+			eventQueue <- termbox.PollEvent()
+		}
+	}()
 	ebox.Render()
-	return true
+	termbox.Flush()
+	for {
+		select {
+		case ev := <-eventQueue:
+			if ev.Type == termbox.EventKey && ev.Key == termbox.KeyEsc {
+				close(eventQueue)
+				return
+			} else {
+				ebox.HandleEvent(&ev)
+			}
+			if len(eventQueue) == 0 {
+				ebox.Render()
+				termbox.Flush()
+			}
+		}
+	}
 }
