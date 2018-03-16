@@ -240,10 +240,10 @@ type Options struct {
 	Fg         termbox.Attribute
 	Bg         termbox.Attribute
 	Wrap       bool
-	Autoexpand bool
-	MaxHeight  int
-	PrintNL    bool
-	ExitKeys   []termbox.Key
+	autoexpand bool
+	maxHeight  int
+	printNL    bool
+	exitKeys   []termbox.Key
 }
 
 type Editbox struct {
@@ -253,12 +253,12 @@ type Editbox struct {
 	X, Y          int
 	Width, Height int
 	Wrap          bool
-	Autoexpand    bool
 	Fg, Bg        termbox.Attribute
-	PrintNL       bool
-	ExitKeys      []termbox.Key
+	autoexpand    bool
+	printNL       bool
+	exitKeys      []termbox.Key
 	view          [][]rune
-	// Line y coord in box in wrap mode
+	// Line y coord in box in Wrap mode
 	lineBoxY      []int
 	virtualHeight int
 	minHeight     int
@@ -273,19 +273,19 @@ func NewEditbox(x, y, width, height int, options Options) *Editbox {
 	ebox.Height = height
 	ebox.Fg = options.Fg
 	ebox.Bg = options.Bg
-	ebox.editor = newEditor()
 	ebox.Wrap = options.Wrap
-	ebox.Autoexpand = options.Autoexpand
-	ebox.ExitKeys = options.ExitKeys
-	if ebox.Autoexpand {
+	ebox.autoexpand = options.autoexpand
+	if ebox.autoexpand {
 		ebox.minHeight = height
-		if options.MaxHeight <= 0 {
+		if options.maxHeight <= 0 {
 			ebox.maxHeight = ebox.minHeight
 		} else {
-			ebox.maxHeight = options.MaxHeight
+			ebox.maxHeight = options.maxHeight
 		}
 	}
-	ebox.PrintNL = options.PrintNL
+	ebox.printNL = options.printNL
+	ebox.exitKeys = options.exitKeys
+	ebox.editor = newEditor()
 	return &ebox
 }
 
@@ -307,7 +307,7 @@ func (ebox *Editbox) updateLineOffsets() {
 		}
 	}
 	ebox.virtualHeight = ebox.lineBoxY[linesCnt-1] + dy + 1
-	if ebox.Autoexpand {
+	if ebox.autoexpand {
 		if ebox.virtualHeight > ebox.Height {
 			if ebox.virtualHeight > ebox.maxHeight {
 				ebox.Height = ebox.maxHeight
@@ -352,7 +352,7 @@ func (ebox *Editbox) moveCursorToLineEnd() {
 	ebox.editor.moveCursorToLineEnd()
 }
 
-// Cursor movement in wrap mode is a bit tricky
+// Cursor movement in Wrap mode is a bit tricky
 // TODO Code smell. Refactor
 func (ebox *Editbox) moveCursorDown() {
 	if ebox.Wrap {
@@ -486,7 +486,7 @@ func (ebox *Editbox) renderView() {
 				break
 			}
 			if r == '\n' {
-				if ebox.PrintNL {
+				if ebox.printNL {
 					r = '␤'
 				} else {
 					r = ' '
@@ -499,6 +499,10 @@ func (ebox *Editbox) renderView() {
 		}
 	}
 }
+
+//----------------------------------------------------------------------------
+// API
+//----------------------------------------------------------------------------
 
 func (ebox *Editbox) Render() {
 	ebox.renderView()
@@ -565,7 +569,7 @@ func (ebox *Editbox) WaitExit() termbox.Event {
 		for {
 			ev := termbox.PollEvent()
 			if ev.Type == termbox.EventKey {
-				for _, key := range ebox.ExitKeys {
+				for _, key := range ebox.exitKeys {
 					if ev.Key == key {
 						exitEvent <- ev
 						return
@@ -597,15 +601,15 @@ func (ebox *Editbox) WaitExit() termbox.Event {
 
 func NewInputbox(x, y, width int, fg, bg termbox.Attribute) *Editbox {
 	ebox := NewEditbox(x, y, width, 1, Options{
-		Wrap:       false,
-		Autoexpand: false,
 		Fg:         fg,
 		Bg:         bg,
-		ExitKeys: []termbox.Key{
+		Wrap:       false,
+		exitKeys: []termbox.Key{
 			termbox.KeyEsc,
 			termbox.KeyTab,
 			termbox.KeyEnter,
 		},
+		autoexpand: false,
 	})
 	ebox.Render()
 	return ebox
