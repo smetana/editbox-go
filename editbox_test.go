@@ -313,21 +313,21 @@ func TestBackspace(t *testing.T) {
 	assertEqual(t, len(ed.lines), 2)
 	assertEqual(t, ed.cursor.Y, 1)
 	assertEqual(t, ed.cursor.X, 1)
-	ed.DeleteRuneBeforeCursor()
+	ed.deleteRuneBeforeCursor()
 
 	assertEqual(t, ed.text(), "12\n")
 	assertEqual(t, len(ed.lines), 2)
 	assertEqual(t, ed.cursor.Y, 1)
 	assertEqual(t, ed.cursor.X, 0)
 
-	ed.DeleteRuneBeforeCursor()
+	ed.deleteRuneBeforeCursor()
 	assertEqual(t, ed.text(), "12")
 	assertEqual(t, len(ed.lines), 1)
 	assertEqual(t, ed.cursor.Y, 0)
 	assertEqual(t, ed.cursor.X, 2)
 
-	ed.DeleteRuneBeforeCursor()
-	ed.DeleteRuneBeforeCursor()
+	ed.deleteRuneBeforeCursor()
+	ed.deleteRuneBeforeCursor()
 
 	assertEqual(t, ed.text(), "")
 	assertEqual(t, len(ed.lines), 1)
@@ -353,17 +353,17 @@ func TestDeleteAtCursor(t *testing.T) {
 	assertEqual(t, ed.cursor.Y, 1)
 	assertEqual(t, ed.cursor.X, 0)
 
-	ed.DeleteRuneAtCursor()
+	ed.deleteRuneAtCursor()
 	assertEqual(t, len(ed.lines), 3)
 	assertEqual(t, ed.text(), "12\n\n45")
 
-	ed.DeleteRuneAtCursor()
+	ed.deleteRuneAtCursor()
 	assertEqual(t, len(ed.lines), 2)
 	assertEqual(t, ed.text(), "12\n45")
 
-	ed.DeleteRuneAtCursor()
-	ed.DeleteRuneAtCursor()
-	ed.DeleteRuneAtCursor() // No effect
+	ed.deleteRuneAtCursor()
+	ed.deleteRuneAtCursor()
+	ed.deleteRuneAtCursor() // No effect
 
 	assertEqual(t, len(ed.lines), 2)
 	assertEqual(t, ed.text(), "12\n")

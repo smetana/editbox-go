@@ -134,16 +134,16 @@ func (ed *editor) checkYPosition(y int) {
 	}
 }
 
-func (ed *editor) DeleteRuneBeforeCursor() {
+func (ed *editor) deleteRuneBeforeCursor() {
 	cursor := &ed.cursor
 	if cursor.X == 0 && cursor.Y == 0 {
 		return
 	}
 	ed.moveCursorLeft()
-	ed.DeleteRuneAtCursor()
+	ed.deleteRuneAtCursor()
 }
 
-func (ed *editor) DeleteRuneAtCursor() {
+func (ed *editor) deleteRuneAtCursor() {
 	cursor := &ed.cursor
 	l := ed.currentLine()
 	r := l.deleteRune(cursor.X)
@@ -539,9 +539,9 @@ func (ebox *Editbox) HandleEvent(ev *termbox.Event) {
 		case termbox.KeyPgdn:
 			ebox.moveCursorPageDown()
 		case termbox.KeyBackspace, termbox.KeyBackspace2:
-			ed.DeleteRuneBeforeCursor()
+			ed.deleteRuneBeforeCursor()
 		case termbox.KeyDelete:
-			ed.DeleteRuneAtCursor()
+			ed.deleteRuneAtCursor()
 		case termbox.KeyEnter:
 			ed.insertRune('\n')
 		case termbox.KeySpace:
