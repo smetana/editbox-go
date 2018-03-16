@@ -416,7 +416,7 @@ func TestMoveCursorToEmptyLine(t *testing.T) {
 // ----------------------------------------------------------------------------
 
 func TestEditorToBox(t *testing.T) {
-	eb := NewEditbox(0, 0, 3, 3, options{wrap: true})
+	eb := newEditbox(0, 0, 3, 3, options{wrap: true})
 	eb.editor.setText("1234567\n12\n1234\n1")
 	eb.updateLineOffsets()
 	assertEqual(t, eb.lineBoxY, []int{0, 3, 4, 6})
@@ -489,7 +489,7 @@ In editor with width = 3 should be written as
 */
 
 func TestMoveDown(t *testing.T) {
-	eb := NewEditbox(0, 0, 3, 3, options{wrap: true})
+	eb := newEditbox(0, 0, 3, 3, options{wrap: true})
 	eb.editor.setText(`11122233
 4445
 6667778
@@ -555,7 +555,7 @@ func TestMoveDown(t *testing.T) {
 }
 
 func TestMoveDownOneLine(t *testing.T) {
-	eb := NewEditbox(0, 0, 3, 3, options{wrap: true})
+	eb := newEditbox(0, 0, 3, 3, options{wrap: true})
 	eb.editor.setText(`11122233`)
 	eb.editor.cursor.x = 0
 	eb.editor.cursor.y = 0
@@ -575,7 +575,7 @@ func TestMoveDownOneLine(t *testing.T) {
 }
 
 func TestMoveUp(t *testing.T) {
-	eb := NewEditbox(0, 0, 3, 3, options{wrap: true})
+	eb := newEditbox(0, 0, 3, 3, options{wrap: true})
 	eb.editor.setText(`11122233
 4445
 6667778
