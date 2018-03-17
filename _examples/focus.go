@@ -1,9 +1,9 @@
 package main
 
 import (
-	".."
 	"fmt"
 	"github.com/nsf/termbox-go"
+	"github.com/smetana/editbox-go"
 )
 
 func main() {
