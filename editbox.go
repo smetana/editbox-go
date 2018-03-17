@@ -601,9 +601,9 @@ func (ebox *Editbox) WaitExit() termbox.Event {
 
 func Input(x, y, width int, fg, bg termbox.Attribute) *Editbox {
 	ebox := newEditbox(x, y, width, 1, options{
-		fg:         fg,
-		bg:         bg,
-		wrap:       false,
+		fg:   fg,
+		bg:   bg,
+		wrap: false,
 		exitKeys: []termbox.Key{
 			termbox.KeyEsc,
 			termbox.KeyTab,
