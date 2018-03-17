@@ -499,8 +499,8 @@ func TestMoveDown(t *testing.T) {
 44`)
 	eb.editor.cursor.x = 0
 	eb.editor.cursor.y = 0
-	eb.moveCursorRight()
-	eb.moveCursorRight()
+	eb.editor.moveCursorRight()
+	eb.editor.moveCursorRight()
 	eb.updateLineOffsets()
 	assertEqual(t, eb.cursor.x, 2)
 	assertEqual(t, eb.cursor.y, 0)
@@ -559,8 +559,8 @@ func TestMoveDownOneLine(t *testing.T) {
 	eb.editor.setText(`11122233`)
 	eb.editor.cursor.x = 0
 	eb.editor.cursor.y = 0
-	eb.moveCursorRight()
-	eb.moveCursorRight()
+	eb.editor.moveCursorRight()
+	eb.editor.moveCursorRight()
 	eb.updateLineOffsets()
 	assertEqual(t, eb.cursor.x, 2)
 	assertEqual(t, eb.cursor.y, 0)
@@ -585,8 +585,8 @@ func TestMoveUp(t *testing.T) {
 44`)
 	eb.editor.cursor.x = 0
 	eb.editor.cursor.y = 6
-	eb.moveCursorRight()
-	eb.moveCursorRight()
+	eb.editor.moveCursorRight()
+	eb.editor.moveCursorRight()
 	eb.updateLineOffsets()
 	assertEqual(t, eb.cursor.x, 2)
 	assertEqual(t, eb.cursor.y, 13)

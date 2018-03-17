@@ -333,22 +333,6 @@ func (ebox *Editbox) editorToBox(x, y int) (int, int) {
 	return x, y
 }
 
-func (ebox *Editbox) moveCursorLeft() {
-	ebox.editor.moveCursorLeft()
-}
-
-func (ebox *Editbox) moveCursorRight() {
-	ebox.editor.moveCursorRight()
-}
-
-func (ebox *Editbox) moveCursorToLineStart() {
-	ebox.editor.moveCursorToLineStart()
-}
-
-func (ebox *Editbox) moveCursorToLineEnd() {
-	ebox.editor.moveCursorToLineEnd()
-}
-
 // Cursor movement in wrap mode is a bit tricky
 // TODO Code smell. Refactor
 func (ebox *Editbox) moveCursorDown() {
@@ -534,17 +518,17 @@ func (ebox *Editbox) HandleEvent(ev *termbox.Event) {
 	case termbox.EventKey:
 		switch ev.Key {
 		case termbox.KeyArrowLeft:
-			ebox.moveCursorLeft()
+			ed.moveCursorLeft()
 		case termbox.KeyArrowRight:
-			ebox.moveCursorRight()
+			ed.moveCursorRight()
 		case termbox.KeyArrowUp:
 			ebox.moveCursorUp()
 		case termbox.KeyArrowDown:
 			ebox.moveCursorDown()
 		case termbox.KeyHome:
-			ebox.moveCursorToLineStart()
+			ed.moveCursorToLineStart()
 		case termbox.KeyEnd:
-			ebox.moveCursorToLineEnd()
+			ed.moveCursorToLineEnd()
 		case termbox.KeyPgup:
 			ebox.moveCursorPageUp()
 		case termbox.KeyPgdn:
