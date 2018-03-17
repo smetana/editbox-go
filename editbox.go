@@ -246,6 +246,7 @@ type options struct {
 	exitKeys   []termbox.Key
 }
 
+// Base type for all editbox widgets.
 type Editbox struct {
 	editor        *editor
 	cursor        cursor
@@ -287,10 +288,6 @@ func newEditbox(x, y, width, height int, options options) *Editbox {
 	ebox.exitKeys = options.exitKeys
 	ebox.editor = newEditor()
 	return &ebox
-}
-
-func (ebox *Editbox) Text() string {
-	return ebox.editor.text()
 }
 
 func (ebox *Editbox) updateLineOffsets() {
@@ -504,6 +501,14 @@ func (ebox *Editbox) renderView() {
 // API
 //----------------------------------------------------------------------------
 
+// Returns widget content.
+func (ebox *Editbox) Text() string {
+	return ebox.editor.text()
+}
+
+
+// Puts widget contents into termbox' cell buffer.
+// This function DOES NOT call termbox.Flush().
 func (ebox *Editbox) Render() {
 	ebox.renderView()
 	var r rune
@@ -521,6 +526,8 @@ func (ebox *Editbox) Render() {
 		ebox.y+ebox.cursor.y-ebox.scroll.y)
 }
 
+// Processes termbox eventsa.
+// Useful if you poll them by yourself.
 func (ebox *Editbox) HandleEvent(ev *termbox.Event) {
 	ed := ebox.editor
 	switch ev.Type {
@@ -562,6 +569,8 @@ func (ebox *Editbox) HandleEvent(ev *termbox.Event) {
 	}
 }
 
+// Start listen for termbox events and edit text.
+// Blocks until exit event. Returns event which made Editbox to exit.
 func (ebox *Editbox) WaitExit() termbox.Event {
 	events := make(chan termbox.Event, 256)
 	exitEvent := make(chan termbox.Event)
@@ -599,6 +608,7 @@ func (ebox *Editbox) WaitExit() termbox.Event {
 // Widgets
 //----------------------------------------------------------------------------
 
+// Create new Input widget. This DOES NOT call termbox.Flush().
 func Input(x, y, width int, fg, bg termbox.Attribute) *Editbox {
 	ebox := newEditbox(x, y, width, 1, options{
 		fg:   fg,
