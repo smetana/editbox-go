@@ -510,7 +510,7 @@ func (ebox *Editbox) Render() {
 		ebox.y+ebox.cursor.y-ebox.scroll.y)
 }
 
-// Processes termbox eventsa.
+// Processes termbox events.
 // Useful if you poll them by yourself.
 func (ebox *Editbox) HandleEvent(ev *termbox.Event) {
 	ed := ebox.editor
@@ -556,6 +556,8 @@ func (ebox *Editbox) HandleEvent(ev *termbox.Event) {
 // Start listen for termbox events and edit text.
 // Blocks until exit event. Returns event which made Editbox to exit.
 func (ebox *Editbox) WaitExit() termbox.Event {
+	// Buffered channel processes paste from buffer faster
+	// because render is called less often
 	events := make(chan termbox.Event, 256)
 	exitEvent := make(chan termbox.Event)
 	go func() {
@@ -578,6 +580,7 @@ func (ebox *Editbox) WaitExit() termbox.Event {
 		select {
 		case ev := <-events:
 			ebox.HandleEvent(&ev)
+			// re-render on empty events buffer
 			if len(events) == 0 {
 				ebox.Render()
 				termbox.Flush()
