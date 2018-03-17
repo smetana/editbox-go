@@ -13,8 +13,7 @@ func main() {
 	}
 	fmt.Println("Press Esc, Enter, or Tab to Exit")
 	fmt.Println("Type here:")
-	input := editbox.NewInputbox(
-		11, 1, 25, termbox.ColorWhite, termbox.ColorBlue)
+	input := editbox.Input(11, 1, 25, termbox.ColorWhite, termbox.ColorBlue)
 	input.WaitExit()
 	termbox.Close()
 	fmt.Printf("Input was: %s\n", input.Text())

@@ -15,8 +15,8 @@ func main() {
 		"Input 1:\n\n" +
 		"Input 2:")
 	inputs := [2]*editbox.Editbox{
-		editbox.NewInputbox(10, 2, 25, termbox.ColorWhite, termbox.ColorBlue),
-		editbox.NewInputbox(10, 4, 25, termbox.ColorWhite, termbox.ColorRed),
+		editbox.Input(10, 2, 25, termbox.ColorWhite, termbox.ColorBlue),
+		editbox.Input(10, 4, 25, termbox.ColorWhite, termbox.ColorRed),
 	}
 	termbox.SetCursor(-1, -1)
 	termbox.Flush()
