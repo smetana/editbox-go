@@ -490,7 +490,6 @@ func (ebox *Editbox) Text() string {
 	return ebox.editor.text()
 }
 
-
 // Puts widget contents into termbox' cell buffer.
 // This function DOES NOT call termbox.Flush().
 func (ebox *Editbox) Render() {
@@ -605,6 +604,26 @@ func Input(x, y, width int, fg, bg termbox.Attribute) *Editbox {
 			termbox.KeyEsc,
 			termbox.KeyTab,
 			termbox.KeyEnter,
+		},
+		autoexpand: false,
+	})
+	ebox.Render()
+	return ebox
+}
+
+// Create new Textarea widget. This DOES NOT call termbox.Flush().
+func Textarea(
+	x, y, width, height int,
+	fg, bg termbox.Attribute,
+	wrap bool,
+) *Editbox {
+	ebox := newEditbox(x, y, width, height, options{
+		fg:   fg,
+		bg:   bg,
+		wrap: wrap,
+		exitKeys: []termbox.Key{
+			termbox.KeyEsc,
+			termbox.KeyTab,
 		},
 		autoexpand: false,
 	})
