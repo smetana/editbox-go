@@ -485,6 +485,11 @@ func (ebox *Editbox) renderView() {
 // API
 //----------------------------------------------------------------------------
 
+// Set widget content
+func (ebox *Editbox) SetText(s string) {
+	ebox.editor.setText(s)
+}
+
 // Returns widget content.
 func (ebox *Editbox) Text() string {
 	return ebox.editor.text()
