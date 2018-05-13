@@ -3,7 +3,7 @@ package editbox
 import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
-	"strings"
+	"bytes"
 	"testing"
 )
 
@@ -12,10 +12,10 @@ import (
 // ----------------------------------------------------------------------------
 
 func (sbox *SelectBox) toString() string {
-	var s strings.Builder
+	buf := bytes.NewBufferString("")
 	var cursor string
 
-	fmt.Fprintf(&s, "\n")
+	fmt.Fprintf(buf, "\n")
 
 	var index int
 	for i := 0; i < sbox.height; i++ {
@@ -25,10 +25,10 @@ func (sbox *SelectBox) toString() string {
 		} else {
 			cursor = " "
 		}
-		fmt.Fprintf(&s, "%s %2d %s\n", cursor, index, sbox.Items[index])
+		fmt.Fprintf(buf, "%s %2d %s\n", cursor, index, sbox.Items[index])
 	}
 
-	return s.String()
+	return buf.String()
 }
 
 // ----------------------------------------------------------------------------
