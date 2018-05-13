@@ -24,7 +24,7 @@ type options struct {
 	exitKeys   []termbox.Key
 }
 
-// Base type for all editbox widgets.
+// Base type for all editbox widgets except Select
 type Editbox struct {
 	editor        *editor
 	cursor        cursor
