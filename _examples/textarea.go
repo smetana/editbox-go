@@ -11,10 +11,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("TAB - focus, Esc - exit\n\n" +
-		"Textarea (wrap == false):" +
-		"\n\n\n\n\n\n\n\n\n" +
-		"Textarea (wrap == true):")
+	editbox.Text(0,  0, 0, 0, 0, "TAB - focus, Esc - exit")
+	editbox.Text(0,  2, 0, 0, 0, "Textarea (wrap == false):")
+	editbox.Text(0, 11, 0, 0, 0, "Textarea (wrap == true):")
 	inputs := [2]*editbox.Editbox{
 		editbox.Textarea(
 			0, 3, 25, 7, termbox.ColorWhite, termbox.ColorBlue, false),
