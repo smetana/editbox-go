@@ -11,9 +11,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	editbox.Text(0,  0, 0, 0, 0, "TAB - focus, Esc - exit")
-	editbox.Text(0,  2, 0, 0, 0, "Textarea (wrap == false):")
-	editbox.Text(0, 11, 0, 0, 0, "Textarea (wrap == true):")
+	editbox.Label(0,  0, 0, 0, 0, "TAB - focus, Esc - exit")
+	editbox.Label(0,  2, 0, 0, 0, "Textarea (wrap == false):")
+	editbox.Label(0, 11, 0, 0, 0, "Textarea (wrap == true):")
 	inputs := [2]*editbox.Editbox{
 		editbox.Textarea(
 			0, 3, 25, 7, termbox.ColorWhite, termbox.ColorBlue, false),

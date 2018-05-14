@@ -11,8 +11,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	editbox.Text(0, 0, 0, 0, 0, "Press Esc, Enter, or Tab to Exit")
-	editbox.Text(0, 2, 0, 0, 0, "Select:")
+	editbox.Label(0, 0, 0, 0, 0, "Press Esc, Enter, or Tab to Exit")
+	editbox.Label(0, 2, 0, 0, 0, "Select:")
 	input := editbox.Select(8, 2, 10, 4,
 		termbox.ColorWhite,
 		termbox.ColorBlue,

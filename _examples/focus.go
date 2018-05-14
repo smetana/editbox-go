@@ -11,9 +11,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	editbox.Text(0, 0, 0, 0, 0, "Press TAB to focus input box")
-	editbox.Text(0, 2, 0, 0, 0, "Input 1:")
-	editbox.Text(0, 4, 0, 0, 0, "Input 2:")
+	editbox.Label(0, 0, 0, 0, 0, "Press TAB to focus input box")
+	editbox.Label(0, 2, 0, 0, 0, "Input 1:")
+	editbox.Label(0, 4, 0, 0, 0, "Input 2:")
 	inputs := [2]*editbox.Editbox{
 		editbox.Input(10, 2, 25, termbox.ColorWhite, termbox.ColorBlue),
 		editbox.Input(10, 4, 25, termbox.ColorWhite, termbox.ColorRed),

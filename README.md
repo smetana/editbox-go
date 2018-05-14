@@ -7,7 +7,7 @@ WIP. API will surely change. For now see [examples](_examples).
 
 ### Implemented Widgets
 
-* editbox.Text
+* editbox.Label
 * editbox.Input
 * editbox.Select
 * editbox.Textarea

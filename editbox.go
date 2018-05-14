@@ -380,7 +380,7 @@ func (ebox *Editbox) WaitExit() termbox.Event {
 // Output line of text at x, y with specified width and fg/bg colors
 // If width > 0 it will truncate text if it is longer than width
 // or fill the rest of the width with spaces if text is shorter than width
-func Text(x, y, width int, fg, bg termbox.Attribute, text string) {
+func Label(x, y, width int, fg, bg termbox.Attribute, text string) {
 	// We cannot rely on range index because it shows byte position
 	// instead of rune position
 	i := -1

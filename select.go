@@ -71,7 +71,7 @@ func (sbox *SelectBox) Render() {
 		} else {
 			fg, bg = sbox.fg, sbox.bg
 		}
-		Text(sbox.x, sbox.y+i, sbox.width, fg, bg, sbox.Items[index])
+		Label(sbox.x, sbox.y+i, sbox.width, fg, bg, sbox.Items[index])
 	}
 }
 
