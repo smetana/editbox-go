@@ -25,7 +25,7 @@ func (sbox *SelectBox) toString() string {
 		} else {
 			cursor = " "
 		}
-		fmt.Fprintf(buf, "%s %2d %s\n", cursor, index, sbox.Items[index])
+		fmt.Fprintf(buf, "%s %2d %s\n", cursor, index, sbox.items[index])
 	}
 
 	return buf.String()
