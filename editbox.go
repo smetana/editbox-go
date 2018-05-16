@@ -294,7 +294,7 @@ func (ebox *Editbox) Render() {
 
 // Processes termbox events.
 // Useful if you poll them by yourself.
-func (ebox *Editbox) HandleEvent(ev *termbox.Event) {
+func (ebox *Editbox) HandleEvent(ev termbox.Event) {
 	ed := ebox.editor
 	switch ev.Type {
 	case termbox.EventKey:
@@ -361,7 +361,7 @@ func (ebox *Editbox) WaitExit() termbox.Event {
 	for {
 		select {
 		case ev := <-events:
-			ebox.HandleEvent(&ev)
+			ebox.HandleEvent(ev)
 			// re-render on empty events buffer
 			if len(events) == 0 {
 				ebox.Render()
