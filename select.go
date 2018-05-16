@@ -75,6 +75,28 @@ func (sbox *SelectBox) Render() {
 	}
 }
 
+// Processes termbox events.
+// Useful if you poll them by yourself.
+// Returns false on unknown event.
+func (sbox *SelectBox) HandleEvent(ev termbox.Event) bool {
+	if ev.Type != termbox.EventKey {
+		return false
+	}
+	switch {
+	case ev.Key == termbox.KeyArrowDown:
+		sbox.cursorDown()
+	case ev.Key == termbox.KeyArrowUp:
+		sbox.cursorUp()
+	case ev.Key == termbox.KeyPgdn:
+		sbox.pageDown()
+	case ev.Key == termbox.KeyPgup:
+		sbox.pageUp()
+	default:
+		return false
+	}
+	return true
+}
+
 // Make widget to listen for termbox events
 // Blocks until exit event.
 // Returns event which made SelectBox to exit, selected index,
@@ -84,17 +106,11 @@ func (sbox *SelectBox) WaitExit() termbox.Event {
 	termbox.Flush()
 	for {
 		ev := termbox.PollEvent()
-		switch ev.Type {
-		case termbox.EventKey:
+		if ev.Type == termbox.EventError {
+			panic(ev.Err)
+		}
+		if !sbox.HandleEvent(ev) && ev.Type == termbox.EventKey {
 			switch {
-			case ev.Key == termbox.KeyArrowDown:
-				sbox.cursorDown()
-			case ev.Key == termbox.KeyArrowUp:
-				sbox.cursorUp()
-			case ev.Key == termbox.KeyPgdn:
-				sbox.pageDown()
-			case ev.Key == termbox.KeyPgup:
-				sbox.pageUp()
 			case ev.Key == termbox.KeyEnter:
 				return ev
 			case ev.Key == termbox.KeyEsc || ev.Key == termbox.KeyTab:
@@ -102,8 +118,6 @@ func (sbox *SelectBox) WaitExit() termbox.Event {
 			default:
 				// do nothing
 			}
-		case termbox.EventError:
-			panic(ev.Err)
 		}
 		sbox.Render()
 		termbox.Flush()
