@@ -66,6 +66,9 @@ func (sbox *SelectBox) Render() {
 	var fg, bg termbox.Attribute
 	for i := 0; i < sbox.height; i++ {
 		index = i + sbox.scroll
+		if index > len(sbox.items)-1 {
+			break
+		}
 		if index == sbox.cursor {
 			fg, bg = sbox.sfg, sbox.sbg
 		} else {
