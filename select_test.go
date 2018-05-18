@@ -1,9 +1,9 @@
 package editbox
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/stretchr/testify/assert"
-	"bytes"
 	"testing"
 )
 
