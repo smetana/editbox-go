@@ -433,3 +433,22 @@ func Textarea(
 	ebox.Render()
 	return ebox
 }
+
+// Confirmation dialog
+func Confirm(x, y int, fg, bg termbox.Attribute, msg string) bool {
+	Label(x, y, 0, fg, bg, msg+" [y/n]")
+	termbox.Flush()
+	for {
+		ev := termbox.PollEvent()
+		if ev.Type == termbox.EventKey && ev.Ch == 'y' {
+			return true
+		}
+		if ev.Type == termbox.EventKey &&
+			(ev.Key == termbox.KeyEsc || ev.Ch == 'n') {
+			return false
+		}
+		if ev.Type == termbox.EventError {
+			panic(ev.Err)
+		}
+	}
+}

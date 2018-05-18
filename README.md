@@ -11,3 +11,4 @@ WIP. API will surely change. For now see [examples](_examples).
 * editbox.Input
 * editbox.Select
 * editbox.Textarea
+* editbox.Confirm
