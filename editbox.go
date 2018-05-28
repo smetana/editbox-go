@@ -1,7 +1,9 @@
 package editbox
 
 import (
+	"bufio"
 	"github.com/nsf/termbox-go"
+	"strings"
 )
 
 func check(e error) {
@@ -394,6 +396,28 @@ func Label(x, y, width int, fg, bg termbox.Attribute, text string) {
 	// Fill the rest of the width with spaces
 	for i = i + 1; width > 0 && i < width; i++ {
 		termbox.SetCell(x+i, y, ' ', fg, bg)
+	}
+}
+
+// Output rectangular block of text at x, y with specified width, heigh
+// and fg/bg colors.
+// If width or height > 0 it will truncate text if it is longer/higher than
+// width/height or fill the rest of the space width with spaces if text is
+// shorter
+func Text(x, y, width, height int, fg, bg termbox.Attribute, text string) {
+	j := -1
+	scanner := bufio.NewScanner(strings.NewReader(text))
+	scanner.Split(bufio.ScanLines)
+	for scanner.Scan() {
+		j++
+		if height > 0 && j >= height {
+			break
+		}
+		Label(x, y+j, width, fg, bg, scanner.Text())
+	}
+	// Fill the rest of the height
+	for j = j + 1; height > 0 && j < height; j++ {
+		Label(x, y+j, width, fg, bg, "")
 	}
 }
 
