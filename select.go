@@ -6,6 +6,7 @@ import (
 
 type SelectBox struct {
 	items         []string
+	selectable    []int
 	cursor        int
 	scroll        int
 	x, y          int
@@ -15,16 +16,17 @@ type SelectBox struct {
 }
 
 func (sbox *SelectBox) scrollToCursor() {
-	if sbox.cursor-sbox.scroll >= sbox.height {
-		sbox.scroll = sbox.cursor - sbox.height + 1
+	selectedIndex := sbox.SelectedIndex()
+	if selectedIndex-sbox.scroll >= sbox.height {
+		sbox.scroll = selectedIndex - sbox.height + 1
 	}
-	if sbox.cursor < sbox.scroll {
-		sbox.scroll = sbox.cursor
+	if selectedIndex < sbox.scroll {
+		sbox.scroll = selectedIndex
 	}
 }
 
 func (sbox *SelectBox) cursorDown() {
-	if sbox.cursor < len(sbox.items)-1 {
+	if sbox.cursor < len(sbox.selectable)-1 {
 		sbox.cursor++
 		sbox.scrollToCursor()
 	}
@@ -39,8 +41,8 @@ func (sbox *SelectBox) cursorUp() {
 
 func (sbox *SelectBox) pageDown() {
 	sbox.cursor = sbox.cursor + sbox.height - 1
-	if sbox.cursor >= len(sbox.items) {
-		sbox.cursor = len(sbox.items) - 1
+	if sbox.cursor >= len(sbox.selectable) {
+		sbox.cursor = len(sbox.selectable) - 1
 	}
 	sbox.scrollToCursor()
 }
@@ -54,11 +56,11 @@ func (sbox *SelectBox) pageUp() {
 }
 
 func (sbox *SelectBox) SelectedIndex() int {
-	return sbox.cursor
+	return sbox.selectable[sbox.cursor]
 }
 
 func (sbox *SelectBox) Text() string {
-	return sbox.items[sbox.cursor]
+	return sbox.items[sbox.SelectedIndex()]
 }
 
 func (sbox *SelectBox) Render() {
@@ -69,7 +71,7 @@ func (sbox *SelectBox) Render() {
 		if index > len(sbox.items)-1 {
 			break
 		}
-		if index == sbox.cursor {
+		if index == sbox.SelectedIndex() {
 			fg, bg = sbox.sfg, sbox.sbg
 		} else {
 			fg, bg = sbox.fg, sbox.bg
@@ -139,6 +141,12 @@ func Select(
 ) *SelectBox {
 	var sbox SelectBox
 	sbox.items = items
+	sbox.selectable = make([]int, 0)
+	for i, item := range items {
+		if item != "" {
+			sbox.selectable = append(sbox.selectable, i)
+		}
+	}
 	sbox.x = x
 	sbox.y = y
 	sbox.width = width
