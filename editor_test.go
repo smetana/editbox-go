@@ -147,6 +147,11 @@ func TestDeleteAtCursor(t *testing.T) {
 
 func TestMoveCursorToLineEnd(t *testing.T) {
 	ed := newEditor()
+
+	ed.moveCursorToLineEnd()
+	assert.Equal(t, ed.cursor.y, 0)
+	assert.Equal(t, ed.cursor.x, 0)
+
 	ed.insertRune('1')
 	ed.insertRune('2')
 	ed.insertRune('\n')

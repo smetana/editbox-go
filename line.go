@@ -46,7 +46,11 @@ func (l *line) deleteRune(pos int) rune {
 }
 
 func (l *line) lastRune() rune {
-	return l.text[len(l.text)-1]
+	if len(l.text) == 0 {
+		return 0
+	} else {
+		return l.text[len(l.text)-1]
+	}
 }
 
 func (l *line) lastRuneX() int {
