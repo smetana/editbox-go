@@ -388,6 +388,10 @@ func (ebox *Editbox) WaitExit() termbox.Event {
 	}
 }
 
+func (ebox *Editbox) AddExitKeys(keys ...termbox.Key) {
+	ebox.exitKeys = append(ebox.exitKeys, keys...)
+}
+
 //----------------------------------------------------------------------------
 // Widgets
 //----------------------------------------------------------------------------
