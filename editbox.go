@@ -306,9 +306,17 @@ func (ebox *Editbox) HandleEvent(ev termbox.Event) {
 		case termbox.KeyArrowRight:
 			ed.moveCursorRight()
 		case termbox.KeyArrowUp:
-			ebox.moveCursorUp()
+			if ebox.virtualHeight == 1 {
+				ed.moveCursorToLineStart()
+			} else {
+				ebox.moveCursorUp()
+			}
 		case termbox.KeyArrowDown:
-			ebox.moveCursorDown()
+			if ebox.virtualHeight == 1 {
+				ed.moveCursorToLineEnd()
+			} else {
+				ebox.moveCursorDown()
+			}
 		case termbox.KeyHome:
 			ed.moveCursorToLineStart()
 		case termbox.KeyEnd:
