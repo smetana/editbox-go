@@ -275,6 +275,11 @@ func (ebox *Editbox) Text() string {
 	return ebox.editor.text()
 }
 
+// Returns cursor position.
+func (ebox *Editbox) CursorPosition() (int, int) {
+	return ebox.cursor.x, ebox.cursor.y
+}
+
 // Puts widget contents into termbox' cell buffer.
 // This function DOES NOT call termbox.Flush().
 func (ebox *Editbox) Render() {
