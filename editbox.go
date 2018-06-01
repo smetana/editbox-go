@@ -276,8 +276,29 @@ func (ebox *Editbox) Text() string {
 }
 
 // Returns cursor position.
-func (ebox *Editbox) CursorPosition() (int, int) {
+func (ebox *Editbox) GetCursor() (int, int) {
 	return ebox.cursor.x, ebox.cursor.y
+}
+
+// Set cursor position
+func (ebox *Editbox) SetCursor(x, y int) {
+	ed := ebox.editor
+	if y > len(ed.lines)-1 {
+		ed.cursor.y = len(ed.lines)-1
+	} else if y < 0 {
+		ed.cursor.y = 0
+	} else {
+		ed.cursor.y = y
+	}
+	maxX := ed.currentLine().lastRuneX()
+	if x > maxX {
+		ed.cursor.x = maxX
+	} else if x < 0 {
+		ed.cursor.x = 0
+	} else {
+		ed.cursor.x = x
+	}
+	ed.lastx = ed.cursor.x
 }
 
 // Puts widget contents into termbox' cell buffer.
