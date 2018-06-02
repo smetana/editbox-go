@@ -497,17 +497,17 @@ func Textarea(
 }
 
 // Confirmation dialog
-func Confirm(x, y int, fg, bg termbox.Attribute, msg string) bool {
+func Confirm(x, y int, fg, bg termbox.Attribute, msg string) (bool, termbox.Event) {
 	Label(x, y, 0, fg, bg, msg+" [y/n]")
 	termbox.Flush()
 	for {
 		ev := termbox.PollEvent()
 		if ev.Type == termbox.EventKey && ev.Ch == 'y' {
-			return true
+			return true, ev
 		}
 		if ev.Type == termbox.EventKey &&
 			(ev.Key == termbox.KeyEsc || ev.Ch == 'n') {
-			return false
+			return false, ev
 		}
 		if ev.Type == termbox.EventError {
 			panic(ev.Err)
